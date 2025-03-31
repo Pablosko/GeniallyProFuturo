@@ -1,0 +1,105 @@
+<div id="header-wrapper"></div>
+<div id="botones-wrapper" style="margin-top: 10px;"></div>
+
+<script>
+  // ID único del iframe que renderiza el header
+  const IFRAME_ID = "iframe-header";
+
+  // Crea el iframe si no existe
+  function crearIframe() {
+    let iframe = document.getElementById(IFRAME_ID);
+    if (!iframe) {
+      iframe = document.createElement("iframe");
+      iframe.id = IFRAME_ID;
+      iframe.style.width = "100%";
+      iframe.style.height = "150px";
+      iframe.style.border = "none";
+      document.getElementById("header-wrapper").appendChild(iframe);
+    }
+    actualizarIframe();
+  }
+
+  // Lee los valores de localStorage y construye la URL
+  function construirUrlDesdeLocalStorage() {
+    const avatar = localStorage.getItem("user_avatar_index") || "0";
+    const progress = localStorage.getItem("user_progress") || "0";
+    const badges = [];
+    for (let i = 1; i <= 5; i++) {
+      badges.push(localStorage.getItem(`badge_${i}`) === "true" ? 1 : 0);
+    }
+    const badgeParams = badges.join(",");
+    const url = `https://pablosko.github.io/GeniallyProFuturo/test.html?progress=${progress}&avatar=${avatar}&badges=${badgeParams}`;
+    return url;
+  }
+
+  // Reasigna el src del iframe con los nuevos datos
+  function actualizarIframe() {
+    const iframe = document.getElementById(IFRAME_ID);
+    if (iframe) {
+      const nuevaUrl = construirUrlDesdeLocalStorage();
+      console.log("Actualizando iframe con:", nuevaUrl);
+      iframe.src = nuevaUrl;
+    }
+  }
+
+  // Lógica de cada botón
+  function cambiarPersonaje() {
+    let actual = parseInt(localStorage.getItem("user_avatar_index") || "0");
+    actual = (actual + 1) % 3;
+    localStorage.setItem("user_avatar_index", actual);
+    console.log("Nuevo avatar:", actual);
+    actualizarIframe();
+  }
+
+  function aumentarProgreso() {
+    let progreso = parseInt(localStorage.getItem("user_progress") || "0");
+    progreso = progreso + 5 > 100 ? 0 : progreso + 5;
+    localStorage.setItem("user_progress", progreso);
+    console.log("Nuevo progreso:", progreso);
+    actualizarIframe();
+  }
+
+  function cambiarInsignia() {
+    const badges = [];
+    for (let i = 1; i <= 5; i++) {
+      badges.push(localStorage.getItem(`badge_${i}`) === "true");
+    }
+
+    if (badges.every(b => b)) {
+      // Si todas activadas, las desactivamos
+      for (let i = 1; i <= 5; i++) {
+        localStorage.setItem(`badge_${i}`, "false");
+      }
+      console.log("Todas las insignias desactivadas.");
+    } else {
+      // Activar una aleatoria que esté apagada
+      const apagadas = badges.map((v, i) => (!v ? i + 1 : null)).filter(Boolean);
+      const seleccionada = apagadas[Math.floor(Math.random() * apagadas.length)];
+      localStorage.setItem(`badge_${seleccionada}`, "true");
+      console.log("Insignia activada:", seleccionada);
+    }
+
+    actualizarIframe();
+  }
+
+  // Crea botones y asigna eventos
+  function crearBotones() {
+    const contenedor = document.getElementById("botones-wrapper");
+
+    const botones = [
+      { texto: "Cambiar personaje", accion: cambiarPersonaje },
+      { texto: "Aumentar progreso", accion: aumentarProgreso },
+      { texto: "Cambiar insignia", accion: cambiarInsignia }
+    ];
+
+    botones.forEach(b => {
+      const btn = document.createElement("button");
+      btn.innerText = b.texto;
+      btn.style.marginRight = "10px";
+      btn.onclick = b.accion;
+      contenedor.appendChild(btn);
+    });
+  }
+
+  crearBotones();
+</script>

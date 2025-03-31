@@ -1,15 +1,6 @@
 <div id="header-wrapper"></div>
 <script>
-  // Guardar valores en localStorage
-  localStorage.setItem("user_avatar_index", "1");
-  localStorage.setItem("user_progress", "85");
-  localStorage.setItem("badge_1", "true");
-  localStorage.setItem("badge_2", "false");
-  localStorage.setItem("badge_3", "true");
-  localStorage.setItem("badge_4", "false");
-  localStorage.setItem("badge_5", "true");
-
-  // Construir URL con parámetros
+  // Obtener los valores
   const avatar = localStorage.getItem("user_avatar_index") || "0";
   const progress = localStorage.getItem("user_progress") || "0";
 
@@ -18,10 +9,14 @@
     badges.push(localStorage.getItem(`badge_${i}`) === "true" ? 1 : 0);
   }
 
-  const url = `https://pablosko.github.io/GeniallyProFuturo/test.html?progress=100&avatar=${avatar}&badges=${badges.join(",")}`;
+  const badgeParams = badges.join(",");
+
+  // Construir URL final con parámetros
+  const url = `https://pablosko.github.io/GeniallyProFuturo/test.html?progress=${progress}&avatar=${avatar}&badges=${badgeParams}`;
 
   // Crear e insertar el iframe
   const iframe = document.createElement("iframe");
+  iframe.id = "header-iframe"; // 👈 ID importante para poder actualizarlo luego
   iframe.src = url;
   iframe.style.width = "100%";
   iframe.style.height = "150px";
