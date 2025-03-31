@@ -1,6 +1,5 @@
 // test.js
-console.log("¡Hola! Este mensaje confirma que test.js se ha cargado correctamente.");
-console.log("¡Hola! Este mensaje confirma que test.js se ha cargado correctamente.2");
+
 
 const DEFAULT_AVATAR_URL = 'https://img.freepik.com/vector-gratis/ilustracion-joven-sonriente_1308-174669.jpg';
 
