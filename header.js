@@ -1,4 +1,3 @@
-(function() {
   const currentScript = document.currentScript;
   if (currentScript) {
     console.log("Atributos recibidos:", currentScript.dataset);
