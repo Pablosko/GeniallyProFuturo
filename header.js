@@ -1,3 +1,10 @@
+<<<<<<< HEAD
+=======
+  const currentScript = document.currentScript;
+  if (currentScript) {
+    console.log("Atributos recibidos:", currentScript.dataset);
+  } else {
+>>>>>>> origin/main
     console.log("document.currentScript es null");
   // Recupera el script actual y sus atributos data
   const dataset = currentScript ? currentScript.dataset : {};
