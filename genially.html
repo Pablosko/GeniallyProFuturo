@@ -18,7 +18,7 @@
     badges.push(localStorage.getItem(`badge_${i}`) === "true" ? 1 : 0);
   }
 
-  const url = `https://pablosko.github.io/GeniallyProFuturo/test.html?progress=${progress}&avatar=${avatar}&badges=${badges.join(",")}`;
+  const url = `https://pablosko.github.io/GeniallyProFuturo/test.html?progress=100&avatar=${avatar}&badges=${badges.join(",")}`;
 
   // Crear e insertar el iframe
   const iframe = document.createElement("iframe");
