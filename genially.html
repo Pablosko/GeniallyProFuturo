@@ -1,4 +1,31 @@
-<iframe
-  src="https://pablosko.github.io/GeniallyProFuturo/test.html?progress=60&avatar=https://cdn-icons-png.flaticon.com/512/1077/1077012.png&badges=1,0,1,1,0"
-  style="width:100%; height:120px; border:none;">
-</iframe>
+<div id="header-wrapper"></div>
+<script>
+  // Guardar valores en localStorage
+  localStorage.setItem("user_avatar_index", "1");
+  localStorage.setItem("user_progress", "85");
+  localStorage.setItem("badge_1", "true");
+  localStorage.setItem("badge_2", "false");
+  localStorage.setItem("badge_3", "true");
+  localStorage.setItem("badge_4", "false");
+  localStorage.setItem("badge_5", "true");
+
+  // Construir URL con parámetros
+  const avatar = localStorage.getItem("user_avatar_index") || "0";
+  const progress = localStorage.getItem("user_progress") || "0";
+
+  const badges = [];
+  for (let i = 1; i <= 5; i++) {
+    badges.push(localStorage.getItem(`badge_${i}`) === "true" ? 1 : 0);
+  }
+
+  const url = `https://pablosko.github.io/GeniallyProFuturo/test.html?progress=${progress}&avatar=${avatar}&badges=${badges.join(",")}`;
+
+  // Crear e insertar el iframe
+  const iframe = document.createElement("iframe");
+  iframe.src = url;
+  iframe.style.width = "100%";
+  iframe.style.height = "150px";
+  iframe.style.border = "none";
+
+  document.getElementById("header-wrapper").appendChild(iframe);
+</script>
