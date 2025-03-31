@@ -1,10 +1,4 @@
-(function() {
-  const currentScript = document.currentScript;
-  if (currentScript) {
-    console.log("Atributos recibidos:", currentScript.dataset);
-  } else {
     console.log("document.currentScript es null");
-  }
   // Recupera el script actual y sus atributos data
   const dataset = currentScript ? currentScript.dataset : {};
 
@@ -84,4 +78,3 @@
     badges: DEFAULT_BADGES
   });
 
-})();
