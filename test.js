@@ -13,6 +13,7 @@ const BADGE_SIZE = 40;     // ancho/alto de cada insignia
 
 // Función global para actualizar el estado del header
 window.updateHeaderData = function(newData) {
+  console.log("updating header data.");
   let headerData = getHeaderData();
   Object.assign(headerData, newData);
   localStorage.setItem('headerData', JSON.stringify(headerData));
@@ -30,12 +31,15 @@ function getHeaderData() {
 
 // Renderiza el header en el contenedor con id "header-contenedor"
 function renderHeader() {
+  console.log("rendering");
   const container = document.getElementById('header-contenedor');
   if (!container) {
     console.warn("No se encontró el contenedor #header-contenedor");
     return;
   }
   const data = getHeaderData();
+  console.log(data);
+
 
   // Crear la barra de progreso
   const progressBar = `
@@ -76,6 +80,8 @@ function renderHeader() {
     </div>
   `;
 }
+console.log("todo cargado.");
+
 
 // Cuando el DOM esté listo, renderiza el header.
 // Si no hay datos en localStorage, inicializa con valores predeterminados.
