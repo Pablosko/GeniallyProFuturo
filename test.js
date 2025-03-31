@@ -2,6 +2,8 @@
 console.log("¡Hola! Este mensaje confirma que test.js se ha cargado correctamente.");
 
 const DEFAULT_AVATAR_URL = 'https://img.freepik.com/vector-gratis/ilustracion-joven-sonriente_1308-174669.jpg';
+console.log("¡Hola! Este mensaje confirma que test.js se ha cargado correctamente.2");
+
 // URLs para las insignias:
 const BADGE_UNLOCKED_URL = 'https://cdn-icons-png.flaticon.com/512/1426/1426761.png';
 const BADGE_LOCKED_URL = 'https://cdn-icons-png.flaticon.com/512/1426/1426761.png';
