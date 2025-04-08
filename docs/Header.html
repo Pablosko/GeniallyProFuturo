@@ -14,10 +14,6 @@
   <div id="header-contenedor"></div>
 
   <script>
-    // ============================
-    // ✅ CONFIGURACIÓN
-    // ============================
-
     const AVATAR_LIST = [
       "https://cdn-icons-png.flaticon.com/512/147/147144.png",
       "https://cdn-icons-png.flaticon.com/512/2922/2922510.png",
@@ -29,10 +25,10 @@
       "https://cdn-icons-png.flaticon.com/512/929/929426.png",   // Medalla 2
       "https://cdn-icons-png.flaticon.com/512/929/929422.png",   // Medalla 3
       "https://cdn-icons-png.flaticon.com/512/929/929430.png",   // Medalla 4
-      "https://cdn-icons-png.flaticon.com/512/929/929417.png",   // Medalla 5
+      "https://cdn-icons-png.flaticon.com/512/929/929417.png"    // Medalla 5
     ];
 
-    const FINAL_BADGE = "https://cdn-icons-png.flaticon.com/512/929/929403.png"; // Medalla especial final
+    const FINAL_BADGE = "https://cdn-icons-png.flaticon.com/512/929/929403.png";
 
     const AVATAR_WIDTH = 60;
     const AVATAR_HEIGHT = 60;
@@ -77,11 +73,14 @@
         `;
       }).join("");
 
+      // Desbloquear medalla final solo si todas están activadas
+      const finalBadgeUnlocked = data.badges.every(b => b === true);
+
       const finalBadgeHtml = `
         <img 
           src="${FINAL_BADGE}" 
           alt="Insignia final" 
-          style="margin-left: 10px; width: ${FINAL_BADGE_SIZE}px; height: ${FINAL_BADGE_SIZE}px;">
+          style="margin-left: 10px; opacity: ${finalBadgeUnlocked ? 1 : 0.3}; width: ${FINAL_BADGE_SIZE}px; height: ${FINAL_BADGE_SIZE}px;">
       `;
 
       container.innerHTML = `
