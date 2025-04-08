@@ -1,18 +1,66 @@
 <div id="header-wrapper"></div>
-
 <script>
   const TOTAL_AVATARES = 3;
   const TOTAL_INSIGNIAS = 5;
 
-  // Obtener datos de localStorage
+  function actualizarIframe() {
+    const avatar = localStorage.getItem("user_avatar_index") || "0";
+    const badges = [];
+    for (let i = 1; i <= TOTAL_INSIGNIAS; i++) {
+      badges.push(localStorage.getItem(`badge_${i}`) === "true" ? 1 : 0);
+    }
+    const badgeParams = badges.join(",");
+    const iframe = document.getElementById("header-iframe");
+    if (iframe) {
+      iframe.src = `https://pablosko.github.io/GeniallyProFuturo/Header.html?avatar=${avatar}&badges=${badgeParams}`;
+    }
+  }
+
+  function cambiarAvatar() {
+    let actual = parseInt(localStorage.getItem("user_avatar_index") || "0");
+    actual = (actual + 1) % TOTAL_AVATARES;
+    localStorage.setItem("user_avatar_index", actual);
+    actualizarIframe();
+  }
+
+  function añadirInsignia(numero) {
+    if (numero < 1 || numero > TOTAL_INSIGNIAS) return;
+    localStorage.setItem(`badge_${numero}`, "true");
+    actualizarIframe();
+  }
+
+  function añadirInsigniaAleatoria() {
+    const apagadas = [];
+    for (let i = 1; i <= TOTAL_INSIGNIAS; i++) {
+      if (localStorage.getItem(`badge_${i}`) !== "true") apagadas.push(i);
+    }
+    if (apagadas.length > 0) {
+      const rand = apagadas[Math.floor(Math.random() * apagadas.length)];
+      añadirInsignia(rand);
+    }
+  }
+
+  function resetearInsignias() {
+    for (let i = 1; i <= TOTAL_INSIGNIAS; i++) {
+      localStorage.setItem(`badge_${i}`, "false");
+    }
+    actualizarIframe();
+  }
+
+  // 🔁 Exponer globalmente
+  window.cambiarAvatar = cambiarAvatar;
+  window.añadirInsignia = añadirInsignia;
+  window.añadirInsigniaAleatoria = añadirInsigniaAleatoria;
+  window.resetearInsignias = resetearInsignias;
+  window.actualizarIframe = actualizarIframe;
+
+  // Crear iframe
   const avatar = localStorage.getItem("user_avatar_index") || "0";
   const badges = [];
   for (let i = 1; i <= TOTAL_INSIGNIAS; i++) {
     badges.push(localStorage.getItem(`badge_${i}`) === "true" ? 1 : 0);
   }
   const badgeParams = badges.join(",");
-
-  // Crear el iframe del header
   const iframe = document.createElement("iframe");
   iframe.id = "header-iframe";
   iframe.src = `https://pablosko.github.io/GeniallyProFuturo/Header.html?avatar=${avatar}&badges=${badgeParams}`;
@@ -20,64 +68,4 @@
   iframe.style.height = "150px";
   iframe.style.border = "none";
   document.getElementById("header-wrapper").appendChild(iframe);
-
-  // 🔁 Actualizar iframe
-  function actualizarIframe() {
-    const iframe = document.getElementById("header-iframe");
-    if (!iframe) return;
-
-    const avatar = localStorage.getItem("user_avatar_index") || "0";
-    const badges = [];
-    for (let i = 1; i <= TOTAL_INSIGNIAS; i++) {
-      badges.push(localStorage.getItem(`badge_${i}`) === "true" ? 1 : 0);
-    }
-    const badgeParams = badges.join(",");
-    iframe.src = `https://pablosko.github.io/GeniallyProFuturo/Header.html?avatar=${avatar}&badges=${badgeParams}`;
-  }
-
-  // 👤 Cambiar avatar cíclicamente
-  function cambiarAvatar() {
-    let actual = parseInt(localStorage.getItem("user_avatar_index") || "0");
-    actual = (actual + 1) % TOTAL_AVATARES;
-    localStorage.setItem("user_avatar_index", actual);
-    console.log(`[👤 Avatar cambiado] Nuevo: ${actual}`);
-    actualizarIframe();
-  }
-
-  // 🏅 Activar una insignia concreta
-  function añadirInsignia(numero) {
-    if (numero < 1 || numero > TOTAL_INSIGNIAS) {
-      console.warn(`⚠️ Número fuera de rango. Usa un valor entre 1 y ${TOTAL_INSIGNIAS}.`);
-      return;
-    }
-    localStorage.setItem(`badge_${numero}`, "true");
-    console.log(`[🏅 Insignia activada] badge_${numero} = true`);
-    actualizarIframe();
-  }
-
-  // 🏅 Activar una insignia aleatoria aún no activada
-  function añadirInsigniaAleatoria() {
-    const badges = [];
-    for (let i = 1; i <= TOTAL_INSIGNIAS; i++) {
-      badges.push(localStorage.getItem(`badge_${i}`) === "true");
-    }
-
-    const apagadas = badges.map((v, i) => (!v ? i + 1 : null)).filter(Boolean);
-    if (apagadas.length === 0) {
-      console.log("✅ Todas las insignias ya están activadas.");
-      return;
-    }
-
-    const seleccionada = apagadas[Math.floor(Math.random() * apagadas.length)];
-    añadirInsignia(seleccionada);
-  }
-
-  // 🔄 Resetear todas las insignias
-  function resetearInsignias() {
-    for (let i = 1; i <= TOTAL_INSIGNIAS; i++) {
-      localStorage.setItem(`badge_${i}`, "false");
-    }
-    console.log("[🔄 Todas las insignias reseteadas]");
-    actualizarIframe();
-  }
 </script>

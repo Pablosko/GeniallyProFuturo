@@ -5,11 +5,12 @@
     const contenedor = document.getElementById("botones-wrapper");
 
     const botones = [
-      { texto: "👤 Cambiar Avatar", accion: cambiarAvatar },
-      { texto: "🏅 Añadir Medalla Aleatoria", accion: añadirInsigniaAleatoria },
-      { texto: "🔄 Resetear Medallas", accion: resetearInsignias },
-      { texto: "🔁 Actualizar Header", accion: actualizarIframe }
-    ];
+  { texto: "👤 Cambiar Avatar", accion: window.cambiarAvatar },
+  { texto: "🏅 Añadir Medalla Aleatoria", accion: window.añadirInsigniaAleatoria },
+  { texto: "🔄 Resetear Medallas", accion: window.resetearInsignias },
+  { texto: "🔁 Actualizar Header", accion: window.actualizarIframe }
+];
+
 
     botones.forEach(b => {
       const btn = document.createElement("button");

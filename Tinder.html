@@ -1,84 +1,308 @@
-<script>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Juego tipo Tinder - Selection Game</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="selection-game-wrapper"></div>
+
+  <script>
     (function () {
       const isPresentationMode = window.location.hostname === "view.genially.com";
       if (!isPresentationMode) return;
       if (window._tinderGameInitialized) return;
       window._tinderGameInitialized = true;
-    
+
+      // === CONFIGURACIÓN ===
       const CARD_WIDTH = 300;
       const CARD_HEIGHT = 400;
       const SWIPE_THRESHOLD = 20;
       const SWIPE_PERCENT_FOR_COLOR = 0.1;
       const TEXT_SIZE = "24px";
+      const QUESTION_COUNT_TEXT_FONT_SIZE = "14px";
       const MINIMUM_PASS_PERCENT = 60;
-      const HEADER_OFFSET = 100; // 👈 Ajusta esto al alto de tu header fijo
-    
-      const QUESTIONS = [
-        { text: "¿Aceptarías una misión en Marte?", correct: true },
-        { text: "¿Compartirías tu oxígeno con un compañero?", correct: true },
-        { text: "¿Destruirías tu nave para salvar a otros?", correct: false },
-        { text: "¿Irías al espacio sin garantía de retorno?", correct: false },
-        { text: "¿Le darías tu traje a otro astronauta?", correct: true }
-      ];
-    
-      function hideNextButton() {
-        requestAnimationFrame(() => {
-          const svg = document.querySelector('svg .pulse-right');
-          if (svg) {
-            const container = svg.closest('div');
-            if (container) {
-              container.style.transform = 'scale(0)';
-              container.style.position = 'absolute';
-              container.style.left = '-9999px';
-              container.style.top = '-9999px';
-            }
-          } else {
-            setTimeout(hideNextButton, 300);
-          }
-        });
+      const HEADER_OFFSET = 100;
+      const PROGRESS_INCREASE_PERCENT = 10;
+      const NEXT_DELAY_MS = 1500;
+      const APPEAR_DELAY_MS = 350;
+      const CARD_DISAPPEAR_TIME = 500;
+      const FEEDBACK_FADE_TIME = 400;
+      const INSIGNIA_A_ACTIVAR = 3;
+      const NUM_QUESTIONS_TO_USE = 5;
+      const PROGRESS_BAR_TOP_PERCENT = 0.15;
+
+      const QUESTION_POOL = [
+  {
+    text: "¿El gobierno de ciberseguridad sirve para proteger la información de la empresa?",
+    correct: true,
+    rightText: "Sí, protege nuestra información.",
+    leftText: "No tiene mucha importancia.",
+    successMessage: "✅ ¡Correcto! La seguridad es prioridad.",
+    errorMessage: "❌ No, sí es fundamental para proteger la organización."
+  },
+  {
+    text: "¿La gestión de riesgos identifica y mitiga amenazas?",
+    correct: true,
+    rightText: "Así es, esa es su función.",
+    leftText: "No, eso no tiene que ver.",
+    successMessage: "✅ Muy bien, ¡sabes de ciberseguridad!",
+    errorMessage: "❌ Error, la gestión de riesgos es clave."
+  },
+  {
+    text: "¿Podemos ignorar el cumplimiento normativo si no hay inspección?",
+    correct: false,
+    rightText: "Sí, mientras nadie revise.",
+    leftText: "No, siempre hay que cumplir.",
+    successMessage: "✅ Correcto, hay que cumplir siempre.",
+    errorMessage: "❌ ¡Cuidado! Eso puede traer sanciones."
+  },
+  {
+    text: "¿El CISO lidera la seguridad de la información?",
+    correct: true,
+    rightText: "Sí, es su responsabilidad.",
+    leftText: "No, él no tiene ese rol.",
+    successMessage: "✅ ¡Bien! El CISO es clave en seguridad.",
+    errorMessage: "❌ No, el CISO sí lidera esta área."
+  },
+  {
+    text: "¿Deberías compartir tu contraseña con un compañero de trabajo?",
+    correct: false,
+    rightText: "Sí, no hay problema.",
+    leftText: "No, eso no se debe hacer.",
+    successMessage: "✅ Muy bien, nunca compartas contraseñas.",
+    errorMessage: "❌ ¡No! Las contraseñas son personales."
+  },
+  {
+    text: "¿Las auditorías ayudan a mejorar la ciberseguridad?",
+    correct: true,
+    rightText: "Claro, ayudan a detectar fallos.",
+    leftText: "No, solo complican las cosas.",
+    successMessage: "✅ ¡Correcto! Son esenciales para mejorar.",
+    errorMessage: "❌ No, sí son útiles y necesarias."
+  },
+  {
+    text: "¿Cualquiera puede tener acceso a toda la información de Profuturo?",
+    correct: false,
+    rightText: "Sí, no pasa nada.",
+    leftText: "No, hay controles de acceso.",
+    successMessage: "✅ Exacto, los accesos deben controlarse.",
+    errorMessage: "❌ ¡Error! El acceso debe estar restringido."
+  },
+  {
+    text: "¿La capacitación en ciberseguridad es solo para técnicos?",
+    correct: false,
+    rightText: "Sí, solo para expertos.",
+    leftText: "No, todos deben aprender.",
+    successMessage: "✅ Bien, todos debemos estar informados.",
+    errorMessage: "❌ No, la ciberseguridad nos compete a todos."
+  },
+  {
+    text: "¿Monitorear los sistemas ayuda a prevenir incidentes?",
+    correct: true,
+    rightText: "Sí, detectamos amenazas a tiempo.",
+    leftText: "No sirve de nada.",
+    successMessage: "✅ Correcto, el monitoreo es vital.",
+    errorMessage: "❌ No, es parte de una buena defensa."
+  },
+  {
+    text: "¿Está bien usar una USB desconocida en tu equipo?",
+    correct: false,
+    rightText: "Sí, seguro no pasa nada.",
+    leftText: "No, puede ser peligrosa.",
+    successMessage: "✅ Muy bien, evita riesgos innecesarios.",
+    errorMessage: "❌ ¡No! Puede contener virus o malware."
+  },
+  {
+    text: "¿Las contraseñas deben ser fáciles de recordar y cortas?",
+    correct: false,
+    rightText: "Sí, es más cómodo.",
+    leftText: "No, deben ser robustas.",
+    successMessage: "✅ Correcto, deben ser seguras.",
+    errorMessage: "❌ No, es importante usar contraseñas fuertes."
+  },
+  {
+    text: "¿El uso de VPN ayuda a proteger la conexión?",
+    correct: true,
+    rightText: "Sí, encripta el tráfico.",
+    leftText: "No, no sirve de mucho.",
+    successMessage: "✅ Muy bien, la VPN es una buena medida.",
+    errorMessage: "❌ No, es una herramienta fundamental."
+  },
+  {
+    text: "¿Debes seguir usando una cuenta sensible aunque no la necesites?",
+    correct: false,
+    rightText: "Sí, no pasa nada.",
+    leftText: "No, hay que desactivarla.",
+    successMessage: "✅ Correcto, deben mantenerse solo las necesarias.",
+    errorMessage: "❌ ¡Error! Es un riesgo innecesario."
+  },
+  {
+    text: "¿Es recomendable clasificar la información según su sensibilidad?",
+    correct: true,
+    rightText: "Sí, ayuda a protegerla mejor.",
+    leftText: "No hace falta.",
+    successMessage: "✅ Muy bien, eso mejora la seguridad.",
+    errorMessage: "❌ No, la clasificación es esencial."
+  },
+  {
+    text: "¿Debes tomar los cursos de ciberseguridad que se te asignan?",
+    correct: true,
+    rightText: "Sí, es parte de mi responsabilidad.",
+    leftText: "No, no me interesan.",
+    successMessage: "✅ Excelente, estás ayudando a Profuturo.",
+    errorMessage: "❌ No, son importantes para protegernos todos."
+  }
+];
+
+
+      const wrapper = document.getElementById("selection-game-wrapper");
+
+      function fadeInElement(el, time = FEEDBACK_FADE_TIME) {
+        el.style.opacity = 0;
+        el.style.transition = `opacity ${time}ms ease`;
+        setTimeout(() => {
+          el.style.opacity = 1;
+        }, 10);
       }
-    
+
+      function createProgressBar(max) {
+        const bar = document.createElement("progress");
+        bar.max = max;
+        bar.value = 0;
+        bar.style.position = "fixed";
+        bar.style.top = `${PROGRESS_BAR_TOP_PERCENT * 100}vh`;
+        bar.style.left = "50%";
+        bar.style.transform = "translateX(-50%)";
+        bar.style.width = "200px";
+        bar.classList.add("tinder-game-element");
+        wrapper.appendChild(bar);
+        return bar;
+      }
+
+      function showParticles(isCorrect, x, y) {
+        for (let i = 0; i < 20; i++) {
+          const particle = document.createElement("div");
+          Object.assign(particle.style, {
+            position: "fixed",
+            left: `${x}px`,
+            top: `${y}px`,
+            width: "8px",
+            height: "8px",
+            background: isCorrect ? "limegreen" : "red",
+            borderRadius: "50%",
+            zIndex: 9999,
+            pointerEvents: "none"
+          });
+
+          const angle = Math.random() * 2 * Math.PI;
+          const speed = 4 + Math.random() * 4;
+          const dx = Math.cos(angle) * speed;
+          const dy = Math.sin(angle) * speed;
+          let offsetX = 0, offsetY = 0, opacity = 1;
+
+          const interval = setInterval(() => {
+            offsetX += dx;
+            offsetY += dy;
+            opacity -= 0.05;
+            particle.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+            particle.style.opacity = opacity;
+            if (opacity <= 0) {
+              clearInterval(interval);
+              particle.remove();
+            }
+          }, 16);
+
+          document.body.appendChild(particle);
+        }
+      }
+
       function destroyTinderGame() {
         document.querySelectorAll('.tinder-game-element').forEach(el => el.remove());
         window.removeEventListener("mousemove", TinderCard._globalMouseMove);
         window.removeEventListener("mouseup", TinderCard._globalMouseUp);
         window._tinderGameInitialized = false;
       }
-    
+
+      function showFeedbackPopup(message, callback) {
+        const popup = document.createElement("div");
+        popup.classList.add("tinder-game-element");
+        Object.assign(popup.style, {
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          background: "white",
+          color: "black",
+          padding: "20px",
+          borderRadius: "10px",
+          textAlign: "center",
+          zIndex: 9999,
+          opacity: 0,
+          transition: `opacity ${FEEDBACK_FADE_TIME}ms ease`
+        });
+
+        const text = document.createElement("p");
+        text.innerText = message;
+
+        const btn = document.createElement("button");
+        btn.innerText = "Aceptar";
+        btn.style.marginTop = "10px";
+        btn.onclick = () => {
+          popup.remove();
+          callback();
+        };
+
+        popup.appendChild(text);
+        popup.appendChild(btn);
+        wrapper.appendChild(popup);
+        requestAnimationFrame(() => popup.style.opacity = 1);
+      }
+
       class TinderCard {
-        constructor(text, correctAnswer, onAnswer) {
-          this.text = text;
-          this.correctAnswer = correctAnswer;
+        constructor(question, onAnswer) {
+          this.question = question;
+          this.correctAnswer = question.correct;
           this.onAnswer = onAnswer;
           this.dragging = false;
           this.offsetX = 0;
-    
+
           this.element = document.createElement("div");
           this.element.classList.add("tinder-game-element");
-          this.element.style.position = "fixed";
-          this.element.style.width = `${CARD_WIDTH}px`;
-          this.element.style.height = `${CARD_HEIGHT}px`;
-          this.element.style.left = "50%";
-          this.element.style.top = `calc(50% + ${HEADER_OFFSET / 2}px)`;
-          this.element.style.transform = "translate(-50%, -50%)";
-          this.element.style.background = "#fff";
-          this.element.style.boxShadow = "0 10px 30px rgba(0,0,0,0.2)";
-          this.element.style.borderRadius = "20px";
-          this.element.style.display = "flex";
-          this.element.style.justifyContent = "center";
-          this.element.style.alignItems = "center";
-          this.element.style.fontSize = "20px";
-          this.element.style.fontWeight = "bold";
-          this.element.style.textAlign = "center";
-          this.element.style.userSelect = "none";
-          this.element.style.transition = "background 0.2s";
-          this.element.style.zIndex = "10";
-          this.element.innerText = this.text;
-    
-          document.body.appendChild(this.element);
+          Object.assign(this.element.style, {
+            position: "fixed",
+            width: `${CARD_WIDTH}px`,
+            height: `${CARD_HEIGHT}px`,
+            left: "50%",
+            top: `calc(50% + ${HEADER_OFFSET / 2}px)`,
+            transform: "translate(-50%, -50%)",
+            background: "#fff",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+            borderRadius: "20px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            fontSize: "20px",
+            fontWeight: "bold",
+            textAlign: "center",
+            userSelect: "none",
+            zIndex: "10",
+            padding: "20px",
+            opacity: 0,
+            transition: `opacity ${APPEAR_DELAY_MS}ms ease`
+          });
+          this.element.innerText = this.question.text;
+          wrapper.appendChild(this.element);
+          requestAnimationFrame(() => this.element.style.opacity = 1);
           this._initDrag();
         }
-    
+
         _initDrag() {
           const mouseMove = (e) => {
             if (!this.dragging) return;
@@ -86,224 +310,162 @@
             const percent = this.offsetX / window.innerWidth;
             const rotateDeg = this.offsetX * 0.1;
             this.element.style.transform = `translate(-50%, -50%) translateX(${this.offsetX}px) rotate(${rotateDeg}deg)`;
-    
+
             if (percent > SWIPE_PERCENT_FOR_COLOR) {
+              this.element.innerText = this.question.rightText;
               this.element.style.background = "#d4f8d4";
             } else if (percent < -SWIPE_PERCENT_FOR_COLOR) {
+              this.element.innerText = this.question.leftText;
               this.element.style.background = "#ffd6d6";
             } else {
+              this.element.innerText = this.question.text;
               this.element.style.background = "#fff";
             }
           };
-    
-          const mouseUp = () => {
+
+          const mouseUp = (e) => {
             if (!this.dragging) return;
             this.dragging = false;
-    
+
             let userAnswer = null;
             if (this.offsetX > SWIPE_THRESHOLD) userAnswer = true;
             else if (this.offsetX < -SWIPE_THRESHOLD) userAnswer = false;
-    
-            if (userAnswer !== null) {
-              const isCorrect = userAnswer === this.correctAnswer;
-              this.showFeedback(isCorrect);
-              this.onAnswer(isCorrect);
-            } else {
-              this.offsetX = 0;
+            else {
               this.element.style.transform = "translate(-50%, -50%)";
-              this.element.style.background = "#fff";
+              this.element.innerText = this.question.text;
+              return;
             }
+
+            const isCorrect = userAnswer === this.correctAnswer;
+            showParticles(isCorrect, e.clientX, e.clientY);
+            this.element.style.transition = `opacity ${CARD_DISAPPEAR_TIME}ms ease`;
+            this.element.style.opacity = 0;
+            setTimeout(() => {
+              this.element.remove();
+              showFeedbackPopup(isCorrect ? this.question.successMessage : this.question.errorMessage, () => {
+                this.onAnswer(isCorrect);
+              });
+            }, CARD_DISAPPEAR_TIME);
           };
-    
+
           this.element.addEventListener("mousedown", (e) => {
             this.dragging = true;
             this.startX = e.clientX;
             this.offsetX = 0;
           });
-    
+
           window.addEventListener("mousemove", mouseMove);
           window.addEventListener("mouseup", mouseUp);
-    
+
           TinderCard._globalMouseMove = mouseMove;
           TinderCard._globalMouseUp = mouseUp;
         }
-    
-        showFeedback(isCorrect) {
-          const rect = this.element.getBoundingClientRect();
-          const centerX = rect.left + CARD_WIDTH / 2;
-          const centerY = rect.top + CARD_HEIGHT / 2;
-    
-          for (let i = 0; i < 20; i++) {
-            const particle = document.createElement("div");
-            particle.style.position = "fixed";
-            particle.style.left = `${centerX}px`;
-            particle.style.top = `${centerY}px`;
-            particle.style.width = "8px";
-            particle.style.height = "8px";
-            particle.style.background = isCorrect ? "limegreen" : "red";
-            particle.style.borderRadius = "50%";
-            particle.style.zIndex = 9999;
-            particle.style.pointerEvents = "none";
-    
-            const angle = Math.random() * 2 * Math.PI;
-            const speed = 4 + Math.random() * 4;
-            const dx = Math.cos(angle) * speed;
-            const dy = Math.sin(angle) * speed;
-    
-            let x = 0, y = 0;
-            let opacity = 1;
-    
-            const interval = setInterval(() => {
-              x += dx;
-              y += dy;
-              opacity -= 0.05;
-              particle.style.transform = `translate(${x}px, ${y}px)`;
-              particle.style.opacity = opacity;
-              if (opacity <= 0) {
-                clearInterval(interval);
-                particle.remove();
-              }
-            }, 16);
-    
-            document.body.appendChild(particle);
-          }
-    
-          const icon = document.createElement("div");
-          icon.textContent = isCorrect ? "✅" : "❌";
-          icon.style.position = "fixed";
-          icon.style.left = "50%";
-          icon.style.top = "50%";
-          icon.style.transform = "translate(-50%, -50%)";
-          icon.style.fontSize = "80px";
-          icon.style.zIndex = 9999;
-          icon.style.transition = "transform 0.5s ease-out, opacity 0.5s";
-          icon.style.opacity = 1;
-          document.body.appendChild(icon);
-    
-          setTimeout(() => {
-            icon.style.transform = "translate(-50%, -50%) scale(1.5)";
-            icon.style.opacity = 0;
-            setTimeout(() => icon.remove(), 500);
-          }, 50);
-    
-          this.element.remove();
-        }
       }
-    
-      class SituationManager {
-        constructor(questions) {
-          hideNextButton();
-          this.questions = questions;
+
+      class GameManager {
+        constructor() {
           this.index = 0;
           this.score = 0;
-    
-          const yes = document.createElement("div");
-          yes.innerText = "SÍ";
-          yes.classList.add("tinder-game-element");
-          yes.style.position = "fixed";
-          yes.style.left = "66%";
-          yes.style.top = `calc(50% + ${HEADER_OFFSET / 2}px)`;
-          yes.style.transform = "translate(-50%, -50%)";
-          yes.style.fontSize = "60px";
-          yes.style.color = "limegreen";
-          yes.style.opacity = "0.2";
-          yes.style.fontWeight = "bold";
-          yes.style.zIndex = "1";
-          document.body.appendChild(yes);
-    
-          const no = document.createElement("div");
-          no.innerText = "NO";
-          no.classList.add("tinder-game-element");
-          no.style.position = "fixed";
-          no.style.left = "33%";
-          no.style.top = `calc(50% + ${HEADER_OFFSET / 2}px)`;
-          no.style.transform = "translate(-50%, -50%)";
-          no.style.fontSize = "60px";
-          no.style.color = "red";
-          no.style.opacity = "0.2";
-          no.style.fontWeight = "bold";
-          no.style.zIndex = "1";
-          document.body.appendChild(no);
-    
+          this.questions = this.getRandomQuestions();
+
+          this.progressBar = createProgressBar(NUM_QUESTIONS_TO_USE);
           this.textElement = document.createElement("div");
           this.textElement.classList.add("tinder-game-element");
-          this.textElement.style.position = "fixed";
-          this.textElement.style.top = `${HEADER_OFFSET - 10}px`;
-          this.textElement.style.width = "100%";
-          this.textElement.style.textAlign = "center";
-          this.textElement.style.fontSize = TEXT_SIZE;
-          this.textElement.style.color = "#fff";
-          this.textElement.style.zIndex = "1000";
-          document.body.appendChild(this.textElement);
-    
+          Object.assign(this.textElement.style, {
+            position: "fixed",
+            top: `${(PROGRESS_BAR_TOP_PERCENT - 0.03) * 100}vh`,
+            width: "100%",
+            textAlign: "center",
+            fontSize: QUESTION_COUNT_TEXT_FONT_SIZE,
+            color: "#000",
+            zIndex: "1000"
+          });
+          wrapper.appendChild(this.textElement);
           this.next();
         }
-    
+
+        getRandomQuestions() {
+          const indices = new Set();
+          while (indices.size < NUM_QUESTIONS_TO_USE) {
+            const rand = Math.floor(Math.random() * QUESTION_POOL.length);
+            indices.add(rand);
+          }
+          return [...indices].map(i => QUESTION_POOL[i]);
+        }
+
         next() {
           if (this.index >= this.questions.length) {
-            const percent = Math.round((this.score / this.questions.length) * 100);
-            this.textElement.innerText = `✅ Has terminado\nAciertos: ${this.score} de ${this.questions.length} (${percent}%)`;
-    
-            const resultMessage = document.createElement("div");
-            resultMessage.classList.add("tinder-game-element");
-            resultMessage.style.position = "fixed";
-            resultMessage.style.top = "60%";
-            resultMessage.style.left = "50%";
-            resultMessage.style.transform = "translate(-50%, -50%)";
-            resultMessage.style.padding = "30px";
-            resultMessage.style.borderRadius = "20px";
-            resultMessage.style.background = "rgba(0, 0, 0, 0.7)";
-            resultMessage.style.color = "#fff";
-            resultMessage.style.fontSize = "24px";
-            resultMessage.style.textAlign = "center";
-            resultMessage.style.zIndex = 9999;
-    
-            const button = document.createElement("button");
-            button.style.marginTop = "20px";
-            button.style.padding = "10px 20px";
-            button.style.fontSize = "18px";
-            button.style.borderRadius = "10px";
-            button.style.border = "none";
-            button.style.cursor = "pointer";
-    
-            if (percent >= MINIMUM_PASS_PERCENT) {
-              resultMessage.innerText += `\n✅ ¡Has superado el mínimo!`;
-              button.innerText = "Continuar";
-              button.style.background = "limegreen";
-              button.onclick = () => {
-                destroyTinderGame();
-                simulateNextGeniallyButton();
-              };
-            } else {
-              resultMessage.innerText += `\n❌ No has alcanzado el mínimo (${MINIMUM_PASS_PERCENT}%)`;
-              button.innerText = "Reintentar";
-              button.style.background = "orangered";
-              button.onclick = () => location.reload();
-            }
-    
-            resultMessage.appendChild(document.createElement("br"));
-            resultMessage.appendChild(button);
-            document.body.appendChild(resultMessage);
+            this.endGame();
             return;
           }
-    
-          const current = this.questions[this.index];
+
           this.textElement.innerText = `Situación ${this.index + 1} de ${this.questions.length}`;
-          this.card = new TinderCard(current.text, current.correct, (isCorrect) => {
-            if (isCorrect) this.score++;
+          new TinderCard(this.questions[this.index], (correct) => {
+            if (correct) this.score++;
             this.index++;
-            setTimeout(() => this.next(), 800);
+            this.progressBar.value = this.index;
+            setTimeout(() => this.next(), 200);
           });
         }
+
+        endGame() {
+          const percent = Math.round((this.score / this.questions.length) * 100);
+          this.textElement.innerText = `✅ Has terminado\nAciertos: ${this.score}/${this.questions.length} (${percent}%)`;
+
+          const result = document.createElement("div");
+          result.classList.add("tinder-game-element");
+          Object.assign(result.style, {
+            position: "fixed",
+            top: "60%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            background: "rgba(0,0,0,0.7)",
+            color: "#fff",
+            padding: "30px",
+            borderRadius: "20px",
+            textAlign: "center",
+            zIndex: 9999
+          });
+
+          const btn = document.createElement("button");
+          btn.style.marginTop = "20px";
+          btn.style.padding = "10px 20px";
+          btn.style.fontSize = "16px";
+          btn.style.borderRadius = "8px";
+          btn.style.border = "none";
+          btn.style.cursor = "pointer";
+
+          if (percent >= MINIMUM_PASS_PERCENT) {
+            result.innerHTML = `<p>✅ ¡Has superado el mínimo con ${percent}%!</p>`;
+            btn.innerText = "Continuar";
+            btn.style.background = "limegreen";
+            btn.onclick = () => {
+              if (window.añadirInsignia) window.añadirInsignia(INSIGNIA_A_ACTIVAR);
+              destroyTinderGame();
+              const nextSVG = document.querySelector('svg .pulse-right')?.closest('div');
+              if (nextSVG) {
+                nextSVG.style.opacity = "1";
+                nextSVG.click();
+              }
+            };
+          } else {
+            result.innerHTML = `<p>❌ No has alcanzado el mínimo (${MINIMUM_PASS_PERCENT}%).\nHas obtenido un ${percent}%.</p>`;
+            btn.innerText = "Reintentar";
+            btn.style.background = "orangered";
+            btn.onclick = () => {
+              result.remove();
+              destroyTinderGame();
+              new GameManager();
+            };
+          }
+
+          result.appendChild(btn);
+          wrapper.appendChild(result);
+        }
       }
-    
-      function simulateNextGeniallyButton() {
-        const nextSVG = document.querySelector('svg .pulse-right')?.closest('div');
-        if (nextSVG) nextSVG.click();
-        else alert("❌ No se encontró el botón SVG para avanzar.");
-      }
-    
-      new SituationManager(QUESTIONS);
+
+      new GameManager();
     })();
-    </script>
-    
+  </script>
+</body>
+</html>
