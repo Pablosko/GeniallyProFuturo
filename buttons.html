@@ -1,87 +1,28 @@
 <div id="botones-wrapper" style="margin-top: 10px;"></div>
 
 <script>
-  const IFRAME_ID = "header-iframe"; // Asegúrate de que el iframe tenga este ID en Genially
-
-  function construirUrlDesdeLocalStorage() {
-    const avatar = localStorage.getItem("user_avatar_index") || "0";
-    const progress = localStorage.getItem("user_progress") || "0";
-    const badges = [];
-    for (let i = 1; i <= 5; i++) {
-      badges.push(localStorage.getItem(`badge_${i}`) === "true" ? 1 : 0);
-    }
-    const badgeParams = badges.join(",");
-    const url = `https://pablosko.github.io/GeniallyProFuturo/test.html?progress=${progress}&avatar=${avatar}&badges=${badgeParams}`;
-    console.log("[URL construida]", url);
-    return url;
-  }
-
-  function actualizarIframe() {
-    const iframe = document.getElementById(IFRAME_ID);
-    if (iframe) {
-      const nuevaUrl = construirUrlDesdeLocalStorage();
-      console.log("[✅ Iframe encontrado] Actualizando src con:", nuevaUrl);
-      iframe.src = nuevaUrl;
-    } else {
-      console.warn("[⚠️ Iframe NO encontrado] ID:", IFRAME_ID);
-    }
-  }
-
-  function cambiarPersonaje() {
-    let actual = parseInt(localStorage.getItem("user_avatar_index") || "0");
-    actual = (actual + 1) % 3;
-    localStorage.setItem("user_avatar_index", actual);
-    console.log("[👤 Avatar cambiado] Nuevo índice:", actual);
-    actualizarIframe();
-  }
-
-  function aumentarProgreso() {
-    let progreso = parseInt(localStorage.getItem("user_progress") || "0");
-    progreso = progreso + 5 > 100 ? 0 : progreso + 5;
-    localStorage.setItem("user_progress", progreso);
-    console.log("[📈 Progreso actualizado] Nuevo valor:", progreso);
-    actualizarIframe();
-  }
-
-  function cambiarInsignia() {
-    const badges = [];
-    for (let i = 1; i <= 5; i++) {
-      badges.push(localStorage.getItem(`badge_${i}`) === "true");
-    }
-
-    if (badges.every(b => b)) {
-      for (let i = 1; i <= 5; i++) {
-        localStorage.setItem(`badge_${i}`, "false");
-      }
-      console.log("[🔄 Reset de insignias] Todas puestas en false");
-    } else {
-      const apagadas = badges.map((v, i) => (!v ? i + 1 : null)).filter(Boolean);
-      const seleccionada = apagadas[Math.floor(Math.random() * apagadas.length)];
-      localStorage.setItem(`badge_${seleccionada}`, "true");
-      console.log(`[🏅 Insignia activada] badge_${seleccionada} = true`);
-    }
-
-    actualizarIframe();
-  }
-
   function crearBotones() {
     const contenedor = document.getElementById("botones-wrapper");
 
     const botones = [
-      { texto: "Cambiar personaje", accion: cambiarPersonaje },
-      { texto: "Aumentar progreso", accion: aumentarProgreso },
-      { texto: "Cambiar insignia", accion: cambiarInsignia }
+      { texto: "👤 Cambiar Avatar", accion: cambiarAvatar },
+      { texto: "🏅 Añadir Medalla Aleatoria", accion: añadirInsigniaAleatoria },
+      { texto: "🔄 Resetear Medallas", accion: resetearInsignias },
+      { texto: "🔁 Actualizar Header", accion: actualizarIframe }
     ];
 
     botones.forEach(b => {
       const btn = document.createElement("button");
       btn.innerText = b.texto;
-      btn.style.marginRight = "10px";
+      btn.style.margin = "5px";
+      btn.style.padding = "8px 14px";
+      btn.style.fontSize = "14px";
+      btn.style.cursor = "pointer";
       btn.onclick = b.accion;
       contenedor.appendChild(btn);
     });
 
-    console.log("[🔘 Botones generados]");
+    console.log("[✅ Botones generados]");
   }
 
   crearBotones();

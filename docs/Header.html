@@ -44,9 +44,12 @@
       const badgeParams = params.get("badges") || "0,0,0,0,0";
       const badges = badgeParams.split(",").map(b => b.trim() === "1");
 
+      const finalBadgeUnlocked = badges.every(b => b); // ✅ se activa solo si todas son true
+
       return {
         avatar,
-        badges
+        badges,
+        finalBadgeUnlocked
       };
     }
 
@@ -73,14 +76,11 @@
         `;
       }).join("");
 
-      // Desbloquear medalla final solo si todas están activadas
-      const finalBadgeUnlocked = data.badges.every(b => b === true);
-
       const finalBadgeHtml = `
         <img 
           src="${FINAL_BADGE}" 
           alt="Insignia final" 
-          style="margin-left: 10px; opacity: ${finalBadgeUnlocked ? 1 : 0.3}; width: ${FINAL_BADGE_SIZE}px; height: ${FINAL_BADGE_SIZE}px;">
+          style="margin-left: 10px; opacity: ${data.finalBadgeUnlocked ? 1 : 0.3}; width: ${FINAL_BADGE_SIZE}px; height: ${FINAL_BADGE_SIZE}px;">
       `;
 
       container.innerHTML = `
