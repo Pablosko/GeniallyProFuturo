@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Header dinámico - por parámetros</title>
+  <title>Header dinámico - sin barra de progreso</title>
   <style>
     body {
       margin: 0;
@@ -14,19 +14,9 @@
   <div id="header-contenedor"></div>
 
   <script>
-    /*
-      ================================
-      CONFIGURACIÓN VÍA PARÁMETROS
-      ================================
-      Este archivo espera los siguientes parámetros en la URL:
-
-      - ?avatar=1      → índice del avatar (0, 1, 2, ...)
-      - ?progress=85   → progreso de 0 a 100
-      - ?badges=1,0,1,1,0 → lista de 5 insignias desbloqueadas (1=true, 0=false)
-
-      Ejemplo:
-      test.html?avatar=2&progress=80&badges=1,0,1,1,1
-    */
+    // ============================
+    // ✅ CONFIGURACIÓN
+    // ============================
 
     const AVATAR_LIST = [
       "https://cdn-icons-png.flaticon.com/512/147/147144.png",
@@ -34,12 +24,20 @@
       "https://cdn-icons-png.flaticon.com/512/4140/4140048.png"
     ];
 
-    const BADGE_UNLOCKED_URL = "https://cdn-icons-png.flaticon.com/512/1426/1426761.png";
-    const BADGE_LOCKED_URL = "https://cdn-icons-png.flaticon.com/512/1426/1426761.png";
+    const BADGE_IMAGES = [
+      "https://cdn-icons-png.flaticon.com/512/1828/1828884.png", // Medalla 1
+      "https://cdn-icons-png.flaticon.com/512/929/929426.png",   // Medalla 2
+      "https://cdn-icons-png.flaticon.com/512/929/929422.png",   // Medalla 3
+      "https://cdn-icons-png.flaticon.com/512/929/929430.png",   // Medalla 4
+      "https://cdn-icons-png.flaticon.com/512/929/929417.png",   // Medalla 5
+    ];
+
+    const FINAL_BADGE = "https://cdn-icons-png.flaticon.com/512/929/929403.png"; // Medalla especial final
 
     const AVATAR_WIDTH = 60;
     const AVATAR_HEIGHT = 60;
     const BADGE_SIZE = 40;
+    const FINAL_BADGE_SIZE = 80;
 
     function getHeaderDataFromParams() {
       const params = new URLSearchParams(window.location.search);
@@ -47,14 +45,11 @@
       const avatarIndex = parseInt(params.get("avatar")) || 0;
       const avatar = AVATAR_LIST[avatarIndex] || AVATAR_LIST[0];
 
-      const progress = parseInt(params.get("progress")) || 0;
-
       const badgeParams = params.get("badges") || "0,0,0,0,0";
       const badges = badgeParams.split(",").map(b => b.trim() === "1");
 
       return {
         avatar,
-        progress,
         badges
       };
     }
@@ -65,12 +60,6 @@
 
       const data = getHeaderDataFromParams();
 
-      const progressBar = `
-        <div style="background: #ddd; width: 100%; height: 10px; border-radius: 5px; overflow: hidden;">
-          <div style="background: #4caf50; width: ${data.progress}%; height: 100%;"></div>
-        </div>
-      `;
-
       const avatarHtml = `
         <div style="padding: 5px;">
           <img src="${data.avatar}" alt="Avatar"
@@ -79,20 +68,28 @@
       `;
 
       const badgesHtml = data.badges.map((unlocked, index) => {
-        return unlocked
-          ? `<img src="${BADGE_UNLOCKED_URL}" alt="Badge ${index+1}" style="margin: 0 5px; width: ${BADGE_SIZE}px; height: ${BADGE_SIZE}px;">`
-          : `<img src="${BADGE_LOCKED_URL}" alt="Badge bloqueada" style="opacity:0.3; margin: 0 5px; width: ${BADGE_SIZE}px; height: ${BADGE_SIZE}px;">`;
+        const imgUrl = BADGE_IMAGES[index] || BADGE_IMAGES[0];
+        return `
+          <img 
+            src="${imgUrl}" 
+            alt="Badge ${index+1}" 
+            style="margin: 0 5px; opacity: ${unlocked ? 1 : 0.3}; width: ${BADGE_SIZE}px; height: ${BADGE_SIZE}px;">
+        `;
       }).join("");
+
+      const finalBadgeHtml = `
+        <img 
+          src="${FINAL_BADGE}" 
+          alt="Insignia final" 
+          style="margin-left: 10px; width: ${FINAL_BADGE_SIZE}px; height: ${FINAL_BADGE_SIZE}px;">
+      `;
 
       container.innerHTML = `
         <div style="border-bottom: 1px solid #ccc; padding: 10px; display: flex; align-items: center; gap: 20px;">
           ${avatarHtml}
-          <div style="flex-grow:1;">
-            <div style="font-weight: bold; margin-bottom: 5px;">Progreso: ${data.progress}%</div>
-            ${progressBar}
-          </div>
           <div style="display: flex; align-items: center;">
             ${badgesHtml}
+            ${finalBadgeHtml}
           </div>
         </div>
       `;

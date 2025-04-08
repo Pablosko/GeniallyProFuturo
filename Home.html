@@ -1,0 +1,270 @@
+<script>
+  (function () {
+    const isPresentationMode = window.location.hostname === "view.genially.com";
+    if (!isPresentationMode) return;
+    if (window._playerAlreadyCreated) return;
+    window._playerAlreadyCreated = true;
+  
+    const PLAYER_SPEED = 120;
+    const PLAYER_THRESHOLD = 60;
+    const PLAYER_FLOAT_SPEED = 20;
+  
+    const POINT_SCALE_SPEED = 0.8;
+    const POINT_SIZE = 60;
+    const ACTIVE_POINT_INDEX = 0;
+  
+    const POINT_POSITIONS = [
+      { x: 0.35, y: 0.4 },
+      { x: 0.25, y: 0.15 },
+      { x: 0.5, y: 0.2 },
+      { x: 0.2, y: 0.3 },
+      { x: 0.4, y: 0.35 }
+    ];
+  
+    const AVATAR_IMAGES = [
+      "https://trainlikeanastronaut.org/wp-content/uploads/2024/08/Mission-x-mascots_500x500-40-e1724747687509.png",
+      "https://trainlikeanastronaut.org/wp-content/uploads/2024/08/Mission-x-mascots_500x500-14-e1724747509200.png",
+      "https://freedesignfile.com/image/preview/8274/astronaut-clipart.png"
+    ];
+  
+    let avatarIndex = parseInt(localStorage.getItem("user_avatar_index"));
+    if (isNaN(avatarIndex) || avatarIndex < 0 || avatarIndex >= AVATAR_IMAGES.length) {
+      avatarIndex = 0;
+    }
+  
+    const IMAGE_PLAYER = AVATAR_IMAGES[avatarIndex];
+    const IMAGE_POINT = "https://www.freeiconspng.com/uploads/circle-outline-png-6.png";
+  
+    function simulateNextGeniallyButton() {
+      destroyPlayerUI();
+      const nextSVG = document.querySelector('svg .pulse-right')?.closest('div');
+      if (nextSVG) nextSVG.click();
+      else alert("❌ No se encontró el botón SVG para avanzar.");
+    }
+  
+    function hideGeniallyNextButton() {
+      const nextButton = document.querySelector('svg .pulse-right')?.closest('div');
+      if (nextButton) {
+        nextButton.style.transform = "scale(0)";
+        nextButton.style.pointerEvents = "none";
+        nextButton.style.opacity = "0";
+      }
+    }
+  
+    function destroyPlayerUI() {
+      document.querySelectorAll('.player-ui-element').forEach(el => el.remove());
+      clearInterval(window._playerLoop);
+      window._playerAlreadyCreated = false;
+    }
+  
+    function getApproachPoint(from, to, threshold) {
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist <= threshold) return { x: from.x, y: from.y };
+      const ratio = (dist - threshold) / dist;
+      return {
+        x: from.x + dx * ratio,
+        y: from.y + dy * ratio
+      };
+    }
+  
+    class Player {
+      constructor(x, y, imageSrc, speed = 100, floatSpeed = 10) {
+        this.x = x;
+        this.y = y;
+        this.targetX = null;
+        this.targetY = null;
+        this.hasTarget = false;
+  
+        this.floatOffset = 0;
+        this.floatDirection = 1;
+        this.speed = speed;
+        this.floatSpeed = floatSpeed;
+  
+        this.element = document.createElement("img");
+        this.element.classList.add("player-ui-element");
+        this.element.src = imageSrc;
+        this.element.style.position = "fixed";
+        this.element.style.width = "80px";
+        this.element.style.height = "auto";
+        this.element.style.zIndex = "9999";
+        this.element.style.pointerEvents = "none";
+  
+        const wrapper = document.getElementById("player-wrapper") || document.body;
+        wrapper.appendChild(this.element);
+        this.updateStyle();
+      }
+  
+      setTarget(x, y) {
+        this.targetX = x;
+        this.targetY = y;
+        this.hasTarget = true;
+      }
+  
+      update(deltaTime) {
+        if (this.hasTarget) {
+          const dx = this.targetX - this.x;
+          const dy = this.targetY - this.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+  
+          if (dist > PLAYER_THRESHOLD) {
+            const moveDist = (this.speed * deltaTime) / 1000;
+            const ratio = moveDist / dist;
+            this.x += dx * Math.min(ratio, 1);
+            this.y += dy * Math.min(ratio, 1);
+          } else {
+            this.hasTarget = false;
+            showStartPopup();
+          }
+        }
+  
+        this.floatOffset += this.floatDirection * this.floatSpeed * (deltaTime / 1000);
+        if (this.floatOffset > 5 || this.floatOffset < -5) {
+          this.floatDirection *= -1;
+        }
+  
+        this.updateStyle();
+      }
+  
+      updateStyle() {
+        this.element.style.left = `${this.x}px`;
+        this.element.style.top = `${this.y + this.floatOffset}px`;
+      }
+    }
+  
+    class ClickablePoint {
+      constructor(x, y, imageSrc, onClick) {
+        this.x = x;
+        this.y = y;
+        this.scale = 1;
+        this.direction = 1;
+        this.alive = true;
+  
+        this.element = document.createElement("img");
+        this.element.classList.add("player-ui-element");
+        this.element.src = imageSrc;
+        this.element.style.position = "fixed";
+        this.element.style.left = `${x}px`;
+        this.element.style.top = `${y}px`;
+        this.element.style.width = `${POINT_SIZE}px`;
+        this.element.style.height = `${POINT_SIZE}px`;
+        this.element.style.zIndex = "9998";
+        this.element.style.cursor = "pointer";
+        this.element.style.transition = "transform 0.1s linear";
+  
+        const wrapper = document.getElementById("player-wrapper") || document.body;
+        wrapper.appendChild(this.element);
+  
+        this.element.addEventListener("click", () => {
+          if (!this.alive) return;
+          this.alive = false;
+          this.destroy();
+          if (onClick) onClick(this);
+        });
+      }
+  
+      update(deltaTime) {
+        if (!this.alive) return;
+        this.scale += this.direction * POINT_SCALE_SPEED * (deltaTime / 1000);
+        if (this.scale > 1.2 || this.scale < 0.8) this.direction *= -1;
+        this.element.style.transform = `scale(${this.scale})`;
+      }
+  
+      destroy() {
+        this.element.remove();
+      }
+    }
+  
+    function showStartPopup() {
+      const popup = document.createElement("div");
+      popup.classList.add("player-ui-element");
+      popup.innerText = "¡Has llegado al punto!";
+      popup.style.position = "fixed";
+      popup.style.top = "50%";
+      popup.style.left = "50%";
+      popup.style.transform = "translate(-50%, -50%)";
+      popup.style.padding = "20px";
+      popup.style.background = "white";
+      popup.style.borderRadius = "10px";
+      popup.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)";
+      popup.style.zIndex = "10000";
+      popup.style.textAlign = "center";
+  
+      const button = document.createElement("button");
+      button.innerText = "¡Empezar!";
+      button.style.marginTop = "10px";
+      button.style.padding = "10px 20px";
+      button.style.fontSize = "16px";
+      button.style.border = "none";
+      button.style.borderRadius = "8px";
+      button.style.background = "limegreen";
+      button.style.color = "white";
+      button.style.cursor = "pointer";
+      button.onclick = () => {
+        popup.remove();
+        simulateNextGeniallyButton();
+      };
+  
+      popup.appendChild(document.createElement("br"));
+      popup.appendChild(button);
+      document.body.appendChild(popup);
+    }
+  
+    const toPixels = pos => ({
+      x: pos.x * window.innerWidth,
+      y: pos.y * window.innerHeight
+    });
+  
+    let playerStart;
+    if (ACTIVE_POINT_INDEX === 0) {
+      playerStart = toPixels(POINT_POSITIONS[0]);
+    } else if (ACTIVE_POINT_INDEX >= 2) {
+      const from = toPixels(POINT_POSITIONS[ACTIVE_POINT_INDEX - 2]);
+      const to = toPixels(POINT_POSITIONS[ACTIVE_POINT_INDEX - 1]);
+      playerStart = getApproachPoint(from, to, PLAYER_THRESHOLD);
+    } else {
+      const from = toPixels({ x: PLAYER_START.x / window.innerWidth, y: PLAYER_START.y / window.innerHeight });
+      const to = toPixels(POINT_POSITIONS[0]);
+      playerStart = getApproachPoint(from, to, PLAYER_THRESHOLD);
+    }
+  
+    const player = new Player(
+      playerStart.x,
+      playerStart.y,
+      IMAGE_PLAYER,
+      PLAYER_SPEED,
+      PLAYER_FLOAT_SPEED
+    );
+  
+    let clickablePoints = [];
+    const createPoint = (pos) => {
+      const pixelPos = toPixels(pos);
+      const point = new ClickablePoint(
+        pixelPos.x,
+        pixelPos.y,
+        IMAGE_POINT,
+        () => {
+          player.setTarget(pixelPos.x, pixelPos.y);
+        }
+      );
+      clickablePoints.push(point);
+    };
+  
+    createPoint(POINT_POSITIONS[ACTIVE_POINT_INDEX]);
+  
+    let lastTime = Date.now();
+    window._playerLoop = setInterval(() => {
+      const now = Date.now();
+      const deltaTime = now - lastTime;
+      lastTime = now;
+  
+      player.update(deltaTime);
+      clickablePoints.forEach((p) => p.update(deltaTime));
+      clickablePoints = clickablePoints.filter((p) => p.alive);
+    }, 20);
+  
+    hideGeniallyNextButton();
+  })();
+  </script>
+  

@@ -1,0 +1,309 @@
+<script>
+    (function () {
+      const isPresentationMode = window.location.hostname === "view.genially.com";
+      if (!isPresentationMode) return;
+      if (window._tinderGameInitialized) return;
+      window._tinderGameInitialized = true;
+    
+      const CARD_WIDTH = 300;
+      const CARD_HEIGHT = 400;
+      const SWIPE_THRESHOLD = 20;
+      const SWIPE_PERCENT_FOR_COLOR = 0.1;
+      const TEXT_SIZE = "24px";
+      const MINIMUM_PASS_PERCENT = 60;
+      const HEADER_OFFSET = 100; // 👈 Ajusta esto al alto de tu header fijo
+    
+      const QUESTIONS = [
+        { text: "¿Aceptarías una misión en Marte?", correct: true },
+        { text: "¿Compartirías tu oxígeno con un compañero?", correct: true },
+        { text: "¿Destruirías tu nave para salvar a otros?", correct: false },
+        { text: "¿Irías al espacio sin garantía de retorno?", correct: false },
+        { text: "¿Le darías tu traje a otro astronauta?", correct: true }
+      ];
+    
+      function hideNextButton() {
+        requestAnimationFrame(() => {
+          const svg = document.querySelector('svg .pulse-right');
+          if (svg) {
+            const container = svg.closest('div');
+            if (container) {
+              container.style.transform = 'scale(0)';
+              container.style.position = 'absolute';
+              container.style.left = '-9999px';
+              container.style.top = '-9999px';
+            }
+          } else {
+            setTimeout(hideNextButton, 300);
+          }
+        });
+      }
+    
+      function destroyTinderGame() {
+        document.querySelectorAll('.tinder-game-element').forEach(el => el.remove());
+        window.removeEventListener("mousemove", TinderCard._globalMouseMove);
+        window.removeEventListener("mouseup", TinderCard._globalMouseUp);
+        window._tinderGameInitialized = false;
+      }
+    
+      class TinderCard {
+        constructor(text, correctAnswer, onAnswer) {
+          this.text = text;
+          this.correctAnswer = correctAnswer;
+          this.onAnswer = onAnswer;
+          this.dragging = false;
+          this.offsetX = 0;
+    
+          this.element = document.createElement("div");
+          this.element.classList.add("tinder-game-element");
+          this.element.style.position = "fixed";
+          this.element.style.width = `${CARD_WIDTH}px`;
+          this.element.style.height = `${CARD_HEIGHT}px`;
+          this.element.style.left = "50%";
+          this.element.style.top = `calc(50% + ${HEADER_OFFSET / 2}px)`;
+          this.element.style.transform = "translate(-50%, -50%)";
+          this.element.style.background = "#fff";
+          this.element.style.boxShadow = "0 10px 30px rgba(0,0,0,0.2)";
+          this.element.style.borderRadius = "20px";
+          this.element.style.display = "flex";
+          this.element.style.justifyContent = "center";
+          this.element.style.alignItems = "center";
+          this.element.style.fontSize = "20px";
+          this.element.style.fontWeight = "bold";
+          this.element.style.textAlign = "center";
+          this.element.style.userSelect = "none";
+          this.element.style.transition = "background 0.2s";
+          this.element.style.zIndex = "10";
+          this.element.innerText = this.text;
+    
+          document.body.appendChild(this.element);
+          this._initDrag();
+        }
+    
+        _initDrag() {
+          const mouseMove = (e) => {
+            if (!this.dragging) return;
+            this.offsetX = e.clientX - this.startX;
+            const percent = this.offsetX / window.innerWidth;
+            const rotateDeg = this.offsetX * 0.1;
+            this.element.style.transform = `translate(-50%, -50%) translateX(${this.offsetX}px) rotate(${rotateDeg}deg)`;
+    
+            if (percent > SWIPE_PERCENT_FOR_COLOR) {
+              this.element.style.background = "#d4f8d4";
+            } else if (percent < -SWIPE_PERCENT_FOR_COLOR) {
+              this.element.style.background = "#ffd6d6";
+            } else {
+              this.element.style.background = "#fff";
+            }
+          };
+    
+          const mouseUp = () => {
+            if (!this.dragging) return;
+            this.dragging = false;
+    
+            let userAnswer = null;
+            if (this.offsetX > SWIPE_THRESHOLD) userAnswer = true;
+            else if (this.offsetX < -SWIPE_THRESHOLD) userAnswer = false;
+    
+            if (userAnswer !== null) {
+              const isCorrect = userAnswer === this.correctAnswer;
+              this.showFeedback(isCorrect);
+              this.onAnswer(isCorrect);
+            } else {
+              this.offsetX = 0;
+              this.element.style.transform = "translate(-50%, -50%)";
+              this.element.style.background = "#fff";
+            }
+          };
+    
+          this.element.addEventListener("mousedown", (e) => {
+            this.dragging = true;
+            this.startX = e.clientX;
+            this.offsetX = 0;
+          });
+    
+          window.addEventListener("mousemove", mouseMove);
+          window.addEventListener("mouseup", mouseUp);
+    
+          TinderCard._globalMouseMove = mouseMove;
+          TinderCard._globalMouseUp = mouseUp;
+        }
+    
+        showFeedback(isCorrect) {
+          const rect = this.element.getBoundingClientRect();
+          const centerX = rect.left + CARD_WIDTH / 2;
+          const centerY = rect.top + CARD_HEIGHT / 2;
+    
+          for (let i = 0; i < 20; i++) {
+            const particle = document.createElement("div");
+            particle.style.position = "fixed";
+            particle.style.left = `${centerX}px`;
+            particle.style.top = `${centerY}px`;
+            particle.style.width = "8px";
+            particle.style.height = "8px";
+            particle.style.background = isCorrect ? "limegreen" : "red";
+            particle.style.borderRadius = "50%";
+            particle.style.zIndex = 9999;
+            particle.style.pointerEvents = "none";
+    
+            const angle = Math.random() * 2 * Math.PI;
+            const speed = 4 + Math.random() * 4;
+            const dx = Math.cos(angle) * speed;
+            const dy = Math.sin(angle) * speed;
+    
+            let x = 0, y = 0;
+            let opacity = 1;
+    
+            const interval = setInterval(() => {
+              x += dx;
+              y += dy;
+              opacity -= 0.05;
+              particle.style.transform = `translate(${x}px, ${y}px)`;
+              particle.style.opacity = opacity;
+              if (opacity <= 0) {
+                clearInterval(interval);
+                particle.remove();
+              }
+            }, 16);
+    
+            document.body.appendChild(particle);
+          }
+    
+          const icon = document.createElement("div");
+          icon.textContent = isCorrect ? "✅" : "❌";
+          icon.style.position = "fixed";
+          icon.style.left = "50%";
+          icon.style.top = "50%";
+          icon.style.transform = "translate(-50%, -50%)";
+          icon.style.fontSize = "80px";
+          icon.style.zIndex = 9999;
+          icon.style.transition = "transform 0.5s ease-out, opacity 0.5s";
+          icon.style.opacity = 1;
+          document.body.appendChild(icon);
+    
+          setTimeout(() => {
+            icon.style.transform = "translate(-50%, -50%) scale(1.5)";
+            icon.style.opacity = 0;
+            setTimeout(() => icon.remove(), 500);
+          }, 50);
+    
+          this.element.remove();
+        }
+      }
+    
+      class SituationManager {
+        constructor(questions) {
+          hideNextButton();
+          this.questions = questions;
+          this.index = 0;
+          this.score = 0;
+    
+          const yes = document.createElement("div");
+          yes.innerText = "SÍ";
+          yes.classList.add("tinder-game-element");
+          yes.style.position = "fixed";
+          yes.style.left = "66%";
+          yes.style.top = `calc(50% + ${HEADER_OFFSET / 2}px)`;
+          yes.style.transform = "translate(-50%, -50%)";
+          yes.style.fontSize = "60px";
+          yes.style.color = "limegreen";
+          yes.style.opacity = "0.2";
+          yes.style.fontWeight = "bold";
+          yes.style.zIndex = "1";
+          document.body.appendChild(yes);
+    
+          const no = document.createElement("div");
+          no.innerText = "NO";
+          no.classList.add("tinder-game-element");
+          no.style.position = "fixed";
+          no.style.left = "33%";
+          no.style.top = `calc(50% + ${HEADER_OFFSET / 2}px)`;
+          no.style.transform = "translate(-50%, -50%)";
+          no.style.fontSize = "60px";
+          no.style.color = "red";
+          no.style.opacity = "0.2";
+          no.style.fontWeight = "bold";
+          no.style.zIndex = "1";
+          document.body.appendChild(no);
+    
+          this.textElement = document.createElement("div");
+          this.textElement.classList.add("tinder-game-element");
+          this.textElement.style.position = "fixed";
+          this.textElement.style.top = `${HEADER_OFFSET - 10}px`;
+          this.textElement.style.width = "100%";
+          this.textElement.style.textAlign = "center";
+          this.textElement.style.fontSize = TEXT_SIZE;
+          this.textElement.style.color = "#fff";
+          this.textElement.style.zIndex = "1000";
+          document.body.appendChild(this.textElement);
+    
+          this.next();
+        }
+    
+        next() {
+          if (this.index >= this.questions.length) {
+            const percent = Math.round((this.score / this.questions.length) * 100);
+            this.textElement.innerText = `✅ Has terminado\nAciertos: ${this.score} de ${this.questions.length} (${percent}%)`;
+    
+            const resultMessage = document.createElement("div");
+            resultMessage.classList.add("tinder-game-element");
+            resultMessage.style.position = "fixed";
+            resultMessage.style.top = "60%";
+            resultMessage.style.left = "50%";
+            resultMessage.style.transform = "translate(-50%, -50%)";
+            resultMessage.style.padding = "30px";
+            resultMessage.style.borderRadius = "20px";
+            resultMessage.style.background = "rgba(0, 0, 0, 0.7)";
+            resultMessage.style.color = "#fff";
+            resultMessage.style.fontSize = "24px";
+            resultMessage.style.textAlign = "center";
+            resultMessage.style.zIndex = 9999;
+    
+            const button = document.createElement("button");
+            button.style.marginTop = "20px";
+            button.style.padding = "10px 20px";
+            button.style.fontSize = "18px";
+            button.style.borderRadius = "10px";
+            button.style.border = "none";
+            button.style.cursor = "pointer";
+    
+            if (percent >= MINIMUM_PASS_PERCENT) {
+              resultMessage.innerText += `\n✅ ¡Has superado el mínimo!`;
+              button.innerText = "Continuar";
+              button.style.background = "limegreen";
+              button.onclick = () => {
+                destroyTinderGame();
+                simulateNextGeniallyButton();
+              };
+            } else {
+              resultMessage.innerText += `\n❌ No has alcanzado el mínimo (${MINIMUM_PASS_PERCENT}%)`;
+              button.innerText = "Reintentar";
+              button.style.background = "orangered";
+              button.onclick = () => location.reload();
+            }
+    
+            resultMessage.appendChild(document.createElement("br"));
+            resultMessage.appendChild(button);
+            document.body.appendChild(resultMessage);
+            return;
+          }
+    
+          const current = this.questions[this.index];
+          this.textElement.innerText = `Situación ${this.index + 1} de ${this.questions.length}`;
+          this.card = new TinderCard(current.text, current.correct, (isCorrect) => {
+            if (isCorrect) this.score++;
+            this.index++;
+            setTimeout(() => this.next(), 800);
+          });
+        }
+      }
+    
+      function simulateNextGeniallyButton() {
+        const nextSVG = document.querySelector('svg .pulse-right')?.closest('div');
+        if (nextSVG) nextSVG.click();
+        else alert("❌ No se encontró el botón SVG para avanzar.");
+      }
+    
+      new SituationManager(QUESTIONS);
+    })();
+    </script>
+    
