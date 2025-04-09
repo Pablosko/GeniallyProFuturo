@@ -15,20 +15,21 @@
 
   <script>
     const AVATAR_LIST = [
-      "https://cdn-icons-png.flaticon.com/512/147/147144.png",
-      "https://cdn-icons-png.flaticon.com/512/2922/2922510.png",
-      "https://cdn-icons-png.flaticon.com/512/4140/4140048.png"
+      "https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/player1_icon.png",
+      "https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/player2_icon.png",
+      "https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/player3_icon.png"
     ];
 
     const BADGE_IMAGES = [
-      "https://cdn-icons-png.flaticon.com/512/1828/1828884.png", // Medalla 1
-      "https://cdn-icons-png.flaticon.com/512/929/929426.png",   // Medalla 2
-      "https://cdn-icons-png.flaticon.com/512/929/929422.png",   // Medalla 3
-      "https://cdn-icons-png.flaticon.com/512/929/929430.png",   // Medalla 4
-      "https://cdn-icons-png.flaticon.com/512/929/929417.png"    // Medalla 5
+      "https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/medal.png",
+      "https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/medal.png",
+      "https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/medal.png",
+      "https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/medal.png",
+      "https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/medal.png"
     ];
 
-    const FINAL_BADGE = "https://cdn-icons-png.flaticon.com/512/929/929403.png";
+    const FINAL_BADGE = "https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/medal.png";
+    const EMPTY_BADGE = "https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/medal_space.png";
 
     const AVATAR_WIDTH = 60;
     const AVATAR_HEIGHT = 60;
@@ -44,7 +45,7 @@
       const badgeParams = params.get("badges") || "0,0,0,0,0";
       const badges = badgeParams.split(",").map(b => b.trim() === "1");
 
-      const finalBadgeUnlocked = badges.every(b => b); // ✅ se activa solo si todas son true
+      const finalBadgeUnlocked = badges.every(b => b);
 
       return {
         avatar,
@@ -67,12 +68,13 @@
       `;
 
       const badgesHtml = data.badges.map((unlocked, index) => {
-        const imgUrl = BADGE_IMAGES[index] || BADGE_IMAGES[0];
+        const imgUrl = unlocked ? BADGE_IMAGES[index] : EMPTY_BADGE;
+        const opacity = unlocked ? 1 : 0.4;
         return `
           <img 
             src="${imgUrl}" 
-            alt="Badge ${index+1}" 
-            style="margin: 0 5px; opacity: ${unlocked ? 1 : 0.3}; width: ${BADGE_SIZE}px; height: ${BADGE_SIZE}px;">
+            alt="Badge ${index + 1}" 
+            style="margin: 0 5px; opacity: ${opacity}; width: ${BADGE_SIZE}px; height: ${BADGE_SIZE}px;">
         `;
       }).join("");
 
