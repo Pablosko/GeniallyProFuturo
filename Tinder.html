@@ -7,464 +7,197 @@
     body {
       margin: 0;
       font-family: sans-serif;
+      background: #f0f0f0;
+    }
+    button {
+      font-size: 16px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <div id="selection-game-wrapper"></div>
-
   <script>
     (function () {
-      const isPresentationMode = window.location.hostname === "view.genially.com";
+      const isPresentationMode = true; // For Genially preview
       if (!isPresentationMode) return;
       if (window._tinderGameInitialized) return;
       window._tinderGameInitialized = true;
 
-      // === CONFIGURACIÓN ===
-      const CARD_WIDTH = 300;
-      const CARD_HEIGHT = 400;
-      const SWIPE_THRESHOLD = 20;
-      const SWIPE_PERCENT_FOR_COLOR = 0.1;
-      const TEXT_SIZE = "24px";
-      const QUESTION_COUNT_TEXT_FONT_SIZE = "14px";
-      const MINIMUM_PASS_PERCENT = 60;
-      const HEADER_OFFSET = 100;
-      const PROGRESS_INCREASE_PERCENT = 10;
-      const NEXT_DELAY_MS = 1500;
-      const APPEAR_DELAY_MS = 350;
-      const CARD_DISAPPEAR_TIME = 500;
-      const FEEDBACK_FADE_TIME = 400;
-      const INSIGNIA_A_ACTIVAR = 3;
-      const NUM_QUESTIONS_TO_USE = 5;
-      const PROGRESS_BAR_TOP_PERCENT = 0.15;
-
-      const QUESTION_POOL = [
-  {
-    text: "¿El gobierno de ciberseguridad sirve para proteger la información de la empresa?",
-    correct: true,
-    rightText: "Sí, protege nuestra información.",
-    leftText: "No tiene mucha importancia.",
-    successMessage: "✅ ¡Correcto! La seguridad es prioridad.",
-    errorMessage: "❌ No, sí es fundamental para proteger la organización."
-  },
-  {
-    text: "¿La gestión de riesgos identifica y mitiga amenazas?",
-    correct: true,
-    rightText: "Así es, esa es su función.",
-    leftText: "No, eso no tiene que ver.",
-    successMessage: "✅ Muy bien, ¡sabes de ciberseguridad!",
-    errorMessage: "❌ Error, la gestión de riesgos es clave."
-  },
-  {
-    text: "¿Podemos ignorar el cumplimiento normativo si no hay inspección?",
-    correct: false,
-    rightText: "Sí, mientras nadie revise.",
-    leftText: "No, siempre hay que cumplir.",
-    successMessage: "✅ Correcto, hay que cumplir siempre.",
-    errorMessage: "❌ ¡Cuidado! Eso puede traer sanciones."
-  },
-  {
-    text: "¿El CISO lidera la seguridad de la información?",
-    correct: true,
-    rightText: "Sí, es su responsabilidad.",
-    leftText: "No, él no tiene ese rol.",
-    successMessage: "✅ ¡Bien! El CISO es clave en seguridad.",
-    errorMessage: "❌ No, el CISO sí lidera esta área."
-  },
-  {
-    text: "¿Deberías compartir tu contraseña con un compañero de trabajo?",
-    correct: false,
-    rightText: "Sí, no hay problema.",
-    leftText: "No, eso no se debe hacer.",
-    successMessage: "✅ Muy bien, nunca compartas contraseñas.",
-    errorMessage: "❌ ¡No! Las contraseñas son personales."
-  },
-  {
-    text: "¿Las auditorías ayudan a mejorar la ciberseguridad?",
-    correct: true,
-    rightText: "Claro, ayudan a detectar fallos.",
-    leftText: "No, solo complican las cosas.",
-    successMessage: "✅ ¡Correcto! Son esenciales para mejorar.",
-    errorMessage: "❌ No, sí son útiles y necesarias."
-  },
-  {
-    text: "¿Cualquiera puede tener acceso a toda la información de Profuturo?",
-    correct: false,
-    rightText: "Sí, no pasa nada.",
-    leftText: "No, hay controles de acceso.",
-    successMessage: "✅ Exacto, los accesos deben controlarse.",
-    errorMessage: "❌ ¡Error! El acceso debe estar restringido."
-  },
-  {
-    text: "¿La capacitación en ciberseguridad es solo para técnicos?",
-    correct: false,
-    rightText: "Sí, solo para expertos.",
-    leftText: "No, todos deben aprender.",
-    successMessage: "✅ Bien, todos debemos estar informados.",
-    errorMessage: "❌ No, la ciberseguridad nos compete a todos."
-  },
-  {
-    text: "¿Monitorear los sistemas ayuda a prevenir incidentes?",
-    correct: true,
-    rightText: "Sí, detectamos amenazas a tiempo.",
-    leftText: "No sirve de nada.",
-    successMessage: "✅ Correcto, el monitoreo es vital.",
-    errorMessage: "❌ No, es parte de una buena defensa."
-  },
-  {
-    text: "¿Está bien usar una USB desconocida en tu equipo?",
-    correct: false,
-    rightText: "Sí, seguro no pasa nada.",
-    leftText: "No, puede ser peligrosa.",
-    successMessage: "✅ Muy bien, evita riesgos innecesarios.",
-    errorMessage: "❌ ¡No! Puede contener virus o malware."
-  },
-  {
-    text: "¿Las contraseñas deben ser fáciles de recordar y cortas?",
-    correct: false,
-    rightText: "Sí, es más cómodo.",
-    leftText: "No, deben ser robustas.",
-    successMessage: "✅ Correcto, deben ser seguras.",
-    errorMessage: "❌ No, es importante usar contraseñas fuertes."
-  },
-  {
-    text: "¿El uso de VPN ayuda a proteger la conexión?",
-    correct: true,
-    rightText: "Sí, encripta el tráfico.",
-    leftText: "No, no sirve de mucho.",
-    successMessage: "✅ Muy bien, la VPN es una buena medida.",
-    errorMessage: "❌ No, es una herramienta fundamental."
-  },
-  {
-    text: "¿Debes seguir usando una cuenta sensible aunque no la necesites?",
-    correct: false,
-    rightText: "Sí, no pasa nada.",
-    leftText: "No, hay que desactivarla.",
-    successMessage: "✅ Correcto, deben mantenerse solo las necesarias.",
-    errorMessage: "❌ ¡Error! Es un riesgo innecesario."
-  },
-  {
-    text: "¿Es recomendable clasificar la información según su sensibilidad?",
-    correct: true,
-    rightText: "Sí, ayuda a protegerla mejor.",
-    leftText: "No hace falta.",
-    successMessage: "✅ Muy bien, eso mejora la seguridad.",
-    errorMessage: "❌ No, la clasificación es esencial."
-  },
-  {
-    text: "¿Debes tomar los cursos de ciberseguridad que se te asignan?",
-    correct: true,
-    rightText: "Sí, es parte de mi responsabilidad.",
-    leftText: "No, no me interesan.",
-    successMessage: "✅ Excelente, estás ayudando a Profuturo.",
-    errorMessage: "❌ No, son importantes para protegernos todos."
-  }
-];
-
+      const IMAGE_CENTRAL_CARD = 'https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/card.png';
+      const IMAGE_SWIPE_LEFT = 'https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/card%20active.png';
+      const IMAGE_SWIPE_RIGHT = 'https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/card%20active.png';
+      const IMAGE_SUCCESS = 'https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/card.png';
+      const IMAGE_ERROR = 'https://github.com/Pablosko/GeniallyProFuturo/blob/main/docs/images/card%20wrong.png';
 
       const wrapper = document.getElementById("selection-game-wrapper");
+      const CARD_WIDTH = 320;
+      const CARD_HEIGHT = 460;
+      const SWIPE_THRESHOLD = 80;
 
-      function fadeInElement(el, time = FEEDBACK_FADE_TIME) {
-        el.style.opacity = 0;
-        el.style.transition = `opacity ${time}ms ease`;
-        setTimeout(() => {
-          el.style.opacity = 1;
-        }, 10);
-      }
+      const questions = [
+        {
+          text: "¿El gobierno de ciberseguridad sirve para proteger la información de la empresa?",
+          correct: true,
+          rightText: "Sí, protege nuestra información.",
+          leftText: "No tiene mucha importancia.",
+          successMessage: "✅ ¡Correcto! La seguridad es prioridad.",
+          errorMessage: "❌ No, sí es fundamental para proteger la organización."
+        },
+        // Puedes añadir más preguntas aquí
+      ];
 
-      function createProgressBar(max) {
-        const bar = document.createElement("progress");
-        bar.max = max;
-        bar.value = 0;
-        bar.style.position = "fixed";
-        bar.style.top = `${PROGRESS_BAR_TOP_PERCENT * 100}vh`;
-        bar.style.left = "50%";
-        bar.style.transform = "translateX(-50%)";
-        bar.style.width = "200px";
-        bar.classList.add("tinder-game-element");
-        wrapper.appendChild(bar);
-        return bar;
-      }
+      let currentIndex = 0;
+      let score = 0;
 
-      function showParticles(isCorrect, x, y) {
-        for (let i = 0; i < 20; i++) {
-          const particle = document.createElement("div");
-          Object.assign(particle.style, {
-            position: "fixed",
-            left: `${x}px`,
-            top: `${y}px`,
-            width: "8px",
-            height: "8px",
-            background: isCorrect ? "limegreen" : "red",
-            borderRadius: "50%",
-            zIndex: 9999,
-            pointerEvents: "none"
-          });
-
-          const angle = Math.random() * 2 * Math.PI;
-          const speed = 4 + Math.random() * 4;
-          const dx = Math.cos(angle) * speed;
-          const dy = Math.sin(angle) * speed;
-          let offsetX = 0, offsetY = 0, opacity = 1;
-
-          const interval = setInterval(() => {
-            offsetX += dx;
-            offsetY += dy;
-            opacity -= 0.05;
-            particle.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-            particle.style.opacity = opacity;
-            if (opacity <= 0) {
-              clearInterval(interval);
-              particle.remove();
-            }
-          }, 16);
-
-          document.body.appendChild(particle);
-        }
-      }
-
-      function destroyTinderGame() {
-        document.querySelectorAll('.tinder-game-element').forEach(el => el.remove());
-        window.removeEventListener("mousemove", TinderCard._globalMouseMove);
-        window.removeEventListener("mouseup", TinderCard._globalMouseUp);
-        window._tinderGameInitialized = false;
-      }
-
-      function showFeedbackPopup(message, callback) {
-        const popup = document.createElement("div");
-        popup.classList.add("tinder-game-element");
-        Object.assign(popup.style, {
+      function renderMainCard(question) {
+        const card = document.createElement("div");
+        card.id = "main-card";
+        Object.assign(card.style, {
           position: "fixed",
+          width: `${CARD_WIDTH}px`,
+          height: `${CARD_HEIGHT}px`,
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          background: "white",
-          color: "black",
-          padding: "20px",
-          borderRadius: "10px",
+          background: IMAGE_CENTRAL_CARD,
+          borderRadius: "20px",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          color: "#fff",
+          fontWeight: "bold",
           textAlign: "center",
-          zIndex: 9999,
-          opacity: 0,
-          transition: `opacity ${FEEDBACK_FADE_TIME}ms ease`
+          padding: "20px",
+          zIndex: 5,
+          transition: "transform 0.2s ease"
         });
 
-        const text = document.createElement("p");
-        text.innerText = message;
+        const icon = document.createElement("div");
+        icon.innerText = "🔐";
+        icon.style.fontSize = "36px";
+        icon.style.marginBottom = "15px";
 
-        const btn = document.createElement("button");
-        btn.innerText = "Aceptar";
-        btn.style.marginTop = "10px";
-        btn.onclick = () => {
-          popup.remove();
-          callback();
-        };
+        const text = document.createElement("div");
+        text.innerText = question.text;
+        text.style.fontSize = "20px";
 
-        popup.appendChild(text);
-        popup.appendChild(btn);
-        wrapper.appendChild(popup);
-        requestAnimationFrame(() => popup.style.opacity = 1);
+        card.appendChild(icon);
+        card.appendChild(text);
+        wrapper.appendChild(card);
+        return card;
       }
 
-      class TinderCard {
-        constructor(question, onAnswer) {
-          this.question = question;
-          this.correctAnswer = question.correct;
-          this.onAnswer = onAnswer;
-          this.dragging = false;
-          this.offsetX = 0;
+      function showResultCard(isCorrect, message, callback) {
+        const card = document.createElement("div");
+        Object.assign(card.style, {
+          position: "fixed",
+          width: `${CARD_WIDTH}px`,
+          height: `${CARD_HEIGHT}px`,
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%) scale(1.05)",
+          background: isCorrect ? IMAGE_SUCCESS : IMAGE_ERROR,
+          borderRadius: "20px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexDirection: "column",
+          color: "white",
+          textAlign: "center",
+          zIndex: 20,
+          transition: "opacity 0.5s ease"
+        });
 
-          this.element = document.createElement("div");
-          this.element.classList.add("tinder-game-element");
-          Object.assign(this.element.style, {
-            position: "fixed",
-            width: `${CARD_WIDTH}px`,
-            height: `${CARD_HEIGHT}px`,
-            left: "50%",
-            top: `calc(50% + ${HEADER_OFFSET / 2}px)`,
-            transform: "translate(-50%, -50%)",
-            background: "#fff",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
-            borderRadius: "20px",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            fontSize: "20px",
-            fontWeight: "bold",
-            textAlign: "center",
-            userSelect: "none",
-            zIndex: "10",
-            padding: "20px",
-            opacity: 0,
-            transition: `opacity ${APPEAR_DELAY_MS}ms ease`
-          });
-          this.element.innerText = this.question.text;
-          wrapper.appendChild(this.element);
-          requestAnimationFrame(() => this.element.style.opacity = 1);
-          this._initDrag();
+        const text = document.createElement("div");
+        text.innerText = message;
+        text.style.background = "rgba(0,0,0,0.6)";
+        text.style.padding = "15px";
+        text.style.borderRadius = "12px";
+        text.style.margin = "10px";
+
+        card.appendChild(text);
+        wrapper.appendChild(card);
+
+        setTimeout(() => {
+          card.remove();
+          callback();
+        }, 2000);
+      }
+
+      function startGame() {
+        if (currentIndex >= questions.length) {
+          const result = document.createElement("div");
+          result.innerHTML = `<h2 style='text-align:center'>¡Juego terminado!</h2><p style='text-align:center'>Aciertos: ${score}/${questions.length}</p>`;
+          wrapper.appendChild(result);
+          return;
         }
 
-        _initDrag() {
-          const mouseMove = (e) => {
-            if (!this.dragging) return;
-            this.offsetX = e.clientX - this.startX;
-            const percent = this.offsetX / window.innerWidth;
-            const rotateDeg = this.offsetX * 0.1;
-            this.element.style.transform = `translate(-50%, -50%) translateX(${this.offsetX}px) rotate(${rotateDeg}deg)`;
+        const question = questions[currentIndex];
+        const card = renderMainCard(question);
+        let startX = 0;
+        let offsetX = 0;
+        let dragging = false;
 
-            if (percent > SWIPE_PERCENT_FOR_COLOR) {
-              this.element.innerText = this.question.rightText;
-              this.element.style.background = "#d4f8d4";
-            } else if (percent < -SWIPE_PERCENT_FOR_COLOR) {
-              this.element.innerText = this.question.leftText;
-              this.element.style.background = "#ffd6d6";
+        card.addEventListener("mousedown", (e) => {
+          dragging = true;
+          startX = e.clientX;
+
+          const onMouseMove = (ev) => {
+            if (!dragging) return;
+            offsetX = ev.clientX - startX;
+            const percent = offsetX / window.innerWidth;
+            const rotateDeg = offsetX * 0.1;
+            card.style.transform = `translate(-50%, -50%) translateX(${offsetX}px) rotate(${rotateDeg}deg)`;
+
+            const textEl = card.querySelector("div:last-child");
+            if (percent > 0.1) {
+              textEl.innerText = question.rightText;
+              card.style.background = IMAGE_SWIPE_RIGHT;
+            } else if (percent < -0.1) {
+              textEl.innerText = question.leftText;
+              card.style.background = IMAGE_SWIPE_LEFT;
             } else {
-              this.element.innerText = this.question.text;
-              this.element.style.background = "#fff";
+              textEl.innerText = question.text;
+              card.style.background = IMAGE_CENTRAL_CARD;
             }
           };
 
-          const mouseUp = (e) => {
-            if (!this.dragging) return;
-            this.dragging = false;
+          const onMouseUp = () => {
+            dragging = false;
+            window.removeEventListener("mousemove", onMouseMove);
+            window.removeEventListener("mouseup", onMouseUp);
 
             let userAnswer = null;
-            if (this.offsetX > SWIPE_THRESHOLD) userAnswer = true;
-            else if (this.offsetX < -SWIPE_THRESHOLD) userAnswer = false;
+            if (offsetX > SWIPE_THRESHOLD) userAnswer = true;
+            else if (offsetX < -SWIPE_THRESHOLD) userAnswer = false;
             else {
-              this.element.style.transform = "translate(-50%, -50%)";
-              this.element.innerText = this.question.text;
+              card.style.transform = "translate(-50%, -50%)";
+              card.querySelector("div:last-child").innerText = question.text;
+              card.style.background = IMAGE_CENTRAL_CARD;
               return;
             }
 
-            const isCorrect = userAnswer === this.correctAnswer;
-            showParticles(isCorrect, e.clientX, e.clientY);
-            this.element.style.transition = `opacity ${CARD_DISAPPEAR_TIME}ms ease`;
-            this.element.style.opacity = 0;
-            setTimeout(() => {
-              this.element.remove();
-              showFeedbackPopup(isCorrect ? this.question.successMessage : this.question.errorMessage, () => {
-                this.onAnswer(isCorrect);
-              });
-            }, CARD_DISAPPEAR_TIME);
+            const isCorrect = userAnswer === question.correct;
+            score += isCorrect ? 1 : 0;
+            card.remove();
+            showResultCard(isCorrect, isCorrect ? question.successMessage : question.errorMessage, () => {
+              currentIndex++;
+              startGame();
+            });
           };
 
-          this.element.addEventListener("mousedown", (e) => {
-            this.dragging = true;
-            this.startX = e.clientX;
-            this.offsetX = 0;
-          });
-
-          window.addEventListener("mousemove", mouseMove);
-          window.addEventListener("mouseup", mouseUp);
-
-          TinderCard._globalMouseMove = mouseMove;
-          TinderCard._globalMouseUp = mouseUp;
-        }
+          window.addEventListener("mousemove", onMouseMove);
+          window.addEventListener("mouseup", onMouseUp);
+        });
       }
 
-      class GameManager {
-        constructor() {
-          this.index = 0;
-          this.score = 0;
-          this.questions = this.getRandomQuestions();
-
-          this.progressBar = createProgressBar(NUM_QUESTIONS_TO_USE);
-          this.textElement = document.createElement("div");
-          this.textElement.classList.add("tinder-game-element");
-          Object.assign(this.textElement.style, {
-            position: "fixed",
-            top: `${(PROGRESS_BAR_TOP_PERCENT - 0.03) * 100}vh`,
-            width: "100%",
-            textAlign: "center",
-            fontSize: QUESTION_COUNT_TEXT_FONT_SIZE,
-            color: "#000",
-            zIndex: "1000"
-          });
-          wrapper.appendChild(this.textElement);
-          this.next();
-        }
-
-        getRandomQuestions() {
-          const indices = new Set();
-          while (indices.size < NUM_QUESTIONS_TO_USE) {
-            const rand = Math.floor(Math.random() * QUESTION_POOL.length);
-            indices.add(rand);
-          }
-          return [...indices].map(i => QUESTION_POOL[i]);
-        }
-
-        next() {
-          if (this.index >= this.questions.length) {
-            this.endGame();
-            return;
-          }
-
-          this.textElement.innerText = `Situación ${this.index + 1} de ${this.questions.length}`;
-          new TinderCard(this.questions[this.index], (correct) => {
-            if (correct) this.score++;
-            this.index++;
-            this.progressBar.value = this.index;
-            setTimeout(() => this.next(), 200);
-          });
-        }
-
-        endGame() {
-          const percent = Math.round((this.score / this.questions.length) * 100);
-          this.textElement.innerText = `✅ Has terminado\nAciertos: ${this.score}/${this.questions.length} (${percent}%)`;
-
-          const result = document.createElement("div");
-          result.classList.add("tinder-game-element");
-          Object.assign(result.style, {
-            position: "fixed",
-            top: "60%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            background: "rgba(0,0,0,0.7)",
-            color: "#fff",
-            padding: "30px",
-            borderRadius: "20px",
-            textAlign: "center",
-            zIndex: 9999
-          });
-
-          const btn = document.createElement("button");
-          btn.style.marginTop = "20px";
-          btn.style.padding = "10px 20px";
-          btn.style.fontSize = "16px";
-          btn.style.borderRadius = "8px";
-          btn.style.border = "none";
-          btn.style.cursor = "pointer";
-
-          if (percent >= MINIMUM_PASS_PERCENT) {
-            result.innerHTML = `<p>✅ ¡Has superado el mínimo con ${percent}%!</p>`;
-            btn.innerText = "Continuar";
-            btn.style.background = "limegreen";
-            btn.onclick = () => {
-              if (window.añadirInsignia) window.añadirInsignia(INSIGNIA_A_ACTIVAR);
-              destroyTinderGame();
-              const nextSVG = document.querySelector('svg .pulse-right')?.closest('div');
-              if (nextSVG) {
-                nextSVG.style.opacity = "1";
-                nextSVG.click();
-              }
-            };
-          } else {
-            result.innerHTML = `<p>❌ No has alcanzado el mínimo (${MINIMUM_PASS_PERCENT}%).\nHas obtenido un ${percent}%.</p>`;
-            btn.innerText = "Reintentar";
-            btn.style.background = "orangered";
-            btn.onclick = () => {
-              result.remove();
-              destroyTinderGame();
-              new GameManager();
-            };
-          }
-
-          result.appendChild(btn);
-          wrapper.appendChild(result);
-        }
-      }
-
-      new GameManager();
+      startGame();
     })();
   </script>
 </body>
