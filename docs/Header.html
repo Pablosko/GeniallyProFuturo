@@ -2,11 +2,17 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Header dinámico - sin barra de progreso</title>
+  <title>Header con fondo y medallas vacías</title>
   <style>
     body {
       margin: 0;
       font-family: sans-serif;
+    }
+    #header-contenedor {
+      background-image: url('https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/header_background.png');
+      background-size: cover;
+      background-position: center;
+      padding: 10px 20px;
     }
   </style>
 </head>
@@ -80,13 +86,13 @@
 
       const finalBadgeHtml = `
         <img 
-          src="${FINAL_BADGE}" 
+          src="${data.finalBadgeUnlocked ? FINAL_BADGE : EMPTY_BADGE}" 
           alt="Insignia final" 
-          style="margin-left: 10px; opacity: ${data.finalBadgeUnlocked ? 1 : 0.3}; width: ${FINAL_BADGE_SIZE}px; height: ${FINAL_BADGE_SIZE}px;">
+          style="margin-left: 10px; opacity: ${data.finalBadgeUnlocked ? 1 : 0.4}; width: ${FINAL_BADGE_SIZE}px; height: ${FINAL_BADGE_SIZE}px;">
       `;
 
       container.innerHTML = `
-        <div style="border-bottom: 1px solid #ccc; padding: 10px; display: flex; align-items: center; gap: 20px;">
+        <div style="display: flex; align-items: center; gap: 20px;">
           ${avatarHtml}
           <div style="display: flex; align-items: center;">
             ${badgesHtml}
