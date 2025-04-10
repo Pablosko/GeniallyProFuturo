@@ -8,13 +8,23 @@
       margin: 0;
       font-family: sans-serif;
       background: #f0f0f0;
+      user-select: none;
     }
     button {
-      font-size: 16px;
-      padding: 10px 20px;
+      font-size: 14px;
+      padding: 6px 12px;
       border-radius: 8px;
       border: none;
       cursor: pointer;
+    }
+    progress {
+      position: fixed;
+      top: 10vh;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 20px;
+      z-index: 100;
     }
   </style>
 </head>
@@ -22,48 +32,97 @@
   <div id="selection-game-wrapper"></div>
   <script>
     (function () {
-      const isPresentationMode = true; // For Genially preview
+      const isPresentationMode = window.location.hostname === "view.genially.com";
       if (!isPresentationMode) return;
-      if (window._tinderGameInitialized) return;
-      window._tinderGameInitialized = true;
 
-      const IMAGE_CENTRAL_CARD = 'https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/card.png';
-      const IMAGE_SWIPE_LEFT = 'https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/card%20active.png';
-      const IMAGE_SWIPE_RIGHT = 'https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/card%20active.png';
-      const IMAGE_SUCCESS = 'https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/card.png';
-      const IMAGE_ERROR = 'https://github.com/Pablosko/GeniallyProFuturo/blob/main/docs/images/card%20wrong.png';
+      const IMAGE_CENTRAL_CARD = 'url("https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/card.png")';
+      const IMAGE_SWIPE_ACTIVE = 'url("https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/card%20active.png")';
+      const IMAGE_SUCCESS = 'url("https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/card.png")';
+      const IMAGE_ERROR = 'url("https://github.com/Pablosko/GeniallyProFuturo/blob/main/docs/images/card%20wrong.png?raw=true")';
+      const IMAGE_MSG_SUCCESS = 'url("https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/card%20right.png")';
+      const IMAGE_MSG_ERROR = 'url("https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/card%20wrong.png")';
+      const IMAGE_CONTINUE_BUTTON = 'url("https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/refs/heads/main/docs/images/btn%20largo.png")';
+      const INSIGNIA_ID = 3;
+      const TOTAL_PREGUNTAS = 10;
 
       const wrapper = document.getElementById("selection-game-wrapper");
-      const CARD_WIDTH = 320;
-      const CARD_HEIGHT = 460;
+      const CARD_WIDTH = 392;
+      const CARD_HEIGHT = 435;
       const SWIPE_THRESHOLD = 80;
+      const PASS_PERCENTAGE = 60;
 
-      const questions = [
-        {
-          text: "¿El gobierno de ciberseguridad sirve para proteger la información de la empresa?",
-          correct: true,
-          rightText: "Sí, protege nuestra información.",
-          leftText: "No tiene mucha importancia.",
-          successMessage: "✅ ¡Correcto! La seguridad es prioridad.",
-          errorMessage: "❌ No, sí es fundamental para proteger la organización."
-        },
-        // Puedes añadir más preguntas aquí
-      ];
+      let questionsPool = [];
+
+    fetch("https://raw.githubusercontent.com/Pablosko/GeniallyProFuturo/main/docs/jsons/SelectionGame.json")
+      .then(res => res.json())
+      .then(data => {
+        questionsPool = data;
+        selectedQuestions = getRandomQuestions();
+        resetGame();
+      });
 
       let currentIndex = 0;
       let score = 0;
+      let selectedQuestions = [];
 
-      function renderMainCard(question) {
+      const progressBar = document.createElement("progress");
+      progressBar.max = TOTAL_PREGUNTAS;
+      progressBar.value = 0;
+      wrapper.appendChild(progressBar);
+
+      function getRandomQuestions() {
+        const indices = new Set();
+        while (indices.size < TOTAL_PREGUNTAS && indices.size < questionsPool.length) {
+          indices.add(Math.floor(Math.random() * questionsPool.length));
+        }
+        return [...indices].map(i => questionsPool[i]);
+      }
+
+      function createSwipeCardWithText() {
         const card = document.createElement("div");
-        card.id = "main-card";
         Object.assign(card.style, {
           position: "fixed",
           width: `${CARD_WIDTH}px`,
           height: `${CARD_HEIGHT}px`,
-          top: "50%",
+          top: "55%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          background: IMAGE_SWIPE_ACTIVE,
+          backgroundSize: "cover",
+          borderRadius: "20px",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 10,
+          color: 'white',
+          textAlign: 'center',
+          fontSize: '18px',
+          padding: '20px'
+        });
+
+        const responseText = document.createElement("div");
+        responseText.className = "response-text";
+        responseText.innerText = "";
+        responseText.style.transition = 'opacity 0.2s ease';
+        card.appendChild(responseText);
+
+        wrapper.appendChild(card);
+        return { card, responseText };
+      }
+
+      function renderMainCard(question) {
+        const card = document.createElement("div");
+        Object.assign(card.style, {
+          position: "fixed",
+          width: `${CARD_WIDTH}px`,
+          height: `${CARD_HEIGHT}px`,
+          top: "55%",
           left: "50%",
           transform: "translate(-50%, -50%)",
           background: IMAGE_CENTRAL_CARD,
+          backgroundSize: "cover",
           borderRadius: "20px",
           boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
           display: "flex",
@@ -74,8 +133,7 @@
           fontWeight: "bold",
           textAlign: "center",
           padding: "20px",
-          zIndex: 5,
-          transition: "transform 0.2s ease"
+          zIndex: 5
         });
 
         const icon = document.createElement("div");
@@ -93,111 +151,192 @@
         return card;
       }
 
-      function showResultCard(isCorrect, message, callback) {
-        const card = document.createElement("div");
-        Object.assign(card.style, {
-          position: "fixed",
-          width: `${CARD_WIDTH}px`,
-          height: `${CARD_HEIGHT}px`,
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%) scale(1.05)",
-          background: isCorrect ? IMAGE_SUCCESS : IMAGE_ERROR,
-          borderRadius: "20px",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          flexDirection: "column",
-          color: "white",
-          textAlign: "center",
-          zIndex: 20,
-          transition: "opacity 0.5s ease"
+      function showFeedbackMessage(isCorrect, message, callback) {
+        const overlay = document.createElement("div");
+        Object.assign(overlay.style, {
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          background: isCorrect ? IMAGE_MSG_SUCCESS : IMAGE_MSG_ERROR,
+          backgroundSize: 'cover',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          flexDirection: 'column',
+          zIndex: 9999,
+          color: 'white',
+          fontSize: '20px',
+          textAlign: 'center',
+          opacity: 0,
+          transition: 'opacity 0.5s ease'
         });
 
         const text = document.createElement("div");
         text.innerText = message;
-        text.style.background = "rgba(0,0,0,0.6)";
-        text.style.padding = "15px";
-        text.style.borderRadius = "12px";
-        text.style.margin = "10px";
+        text.style.marginBottom = '20px';
 
-        card.appendChild(text);
-        wrapper.appendChild(card);
+        const buttonWrapper = document.createElement("div");
+        Object.assign(buttonWrapper.style, {
+          position: 'relative',
+          width: '180px',
+          height: '48px',
+          background: IMAGE_CONTINUE_BUTTON,
+          backgroundSize: 'contain',
+          backgroundRepeat: 'no-repeat',
+          cursor: 'pointer',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        });
 
-        setTimeout(() => {
-          card.remove();
+        const buttonText = document.createElement("span");
+        buttonText.innerText = "Continuar";
+        buttonText.style.cssText = `
+          z-index: 2;
+          color: white;
+          font-weight: bold;
+          font-size: 14px;
+          pointer-events: none;
+          position: relative;
+        `;
+
+        buttonWrapper.appendChild(buttonText);
+        buttonWrapper.onclick = () => {
+          overlay.remove();
           callback();
-        }, 2000);
+        };
+
+        overlay.appendChild(text);
+        overlay.appendChild(buttonWrapper);
+        document.body.appendChild(overlay);
+        requestAnimationFrame(() => overlay.style.opacity = 1);
+      }
+
+      function showFinalResult(score, total) {
+        const overlay = document.createElement("div");
+        Object.assign(overlay.style, {
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          background: "rgba(0, 0, 0, 0.8)",
+          color: "white",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+          textAlign: "center"
+        });
+
+        const percent = Math.round((score / total) * 100);
+        const message = document.createElement("div");
+        message.innerText = percent >= PASS_PERCENTAGE
+          ? `✅ Has conseguido la insignia con ${percent}% de aciertos`
+          : `❌ Solo obtuviste ${percent}%. Reintenta para conseguir la insignia.`;
+        message.style.marginBottom = "20px";
+
+        const button = document.createElement("button");
+        button.innerText = percent >= PASS_PERCENTAGE ? "Continuar" : "Reintentar";
+        button.onclick = () => {
+          overlay.remove();
+          if (percent >= PASS_PERCENTAGE) {
+            if (window.añadirInsignia) window.añadirInsignia(INSIGNIA_ID);
+            const next = document.querySelector('svg .pulse-right')?.closest('div');
+            if (next) next.click();
+          } else {
+            resetGame();
+          }
+        };
+
+        overlay.appendChild(message);
+        overlay.appendChild(button);
+        document.body.appendChild(overlay);
       }
 
       function startGame() {
-        if (currentIndex >= questions.length) {
-          const result = document.createElement("div");
-          result.innerHTML = `<h2 style='text-align:center'>¡Juego terminado!</h2><p style='text-align:center'>Aciertos: ${score}/${questions.length}</p>`;
-          wrapper.appendChild(result);
-          return;
-        }
+        if (currentIndex >= selectedQuestions.length) return showFinalResult(score, selectedQuestions.length);
 
-        const question = questions[currentIndex];
-        const card = renderMainCard(question);
-        let startX = 0;
-        let offsetX = 0;
-        let dragging = false;
+        const question = selectedQuestions[currentIndex];
+        const mainCard = renderMainCard(question);
 
-        card.addEventListener("mousedown", (e) => {
-          dragging = true;
-          startX = e.clientX;
+        mainCard.addEventListener("mousedown", (e) => {
+          let startX = e.clientX;
+          let offsetX = 0;
+          const { card: swipeCard, responseText } = createSwipeCardWithText();
 
-          const onMouseMove = (ev) => {
-            if (!dragging) return;
+          function onMouseMove(ev) {
             offsetX = ev.clientX - startX;
-            const percent = offsetX / window.innerWidth;
             const rotateDeg = offsetX * 0.1;
-            card.style.transform = `translate(-50%, -50%) translateX(${offsetX}px) rotate(${rotateDeg}deg)`;
+            swipeCard.style.transform = `translate(-50%, -50%) translateX(${offsetX}px) rotate(${rotateDeg}deg)`;
 
-            const textEl = card.querySelector("div:last-child");
+            const percent = offsetX / window.innerWidth;
             if (percent > 0.1) {
-              textEl.innerText = question.rightText;
-              card.style.background = IMAGE_SWIPE_RIGHT;
+              responseText.innerText = question.rightText;
+              responseText.style.opacity = 1;
             } else if (percent < -0.1) {
-              textEl.innerText = question.leftText;
-              card.style.background = IMAGE_SWIPE_LEFT;
+              responseText.innerText = question.leftText;
+              responseText.style.opacity = 1;
             } else {
-              textEl.innerText = question.text;
-              card.style.background = IMAGE_CENTRAL_CARD;
+              responseText.innerText = "";
+              responseText.style.opacity = 0;
             }
-          };
+          }
 
-          const onMouseUp = () => {
-            dragging = false;
+          function onMouseUp() {
             window.removeEventListener("mousemove", onMouseMove);
             window.removeEventListener("mouseup", onMouseUp);
 
             let userAnswer = null;
             if (offsetX > SWIPE_THRESHOLD) userAnswer = true;
             else if (offsetX < -SWIPE_THRESHOLD) userAnswer = false;
-            else {
-              card.style.transform = "translate(-50%, -50%)";
-              card.querySelector("div:last-child").innerText = question.text;
-              card.style.background = IMAGE_CENTRAL_CARD;
+
+            if (userAnswer === null) {
+              swipeCard.remove();
               return;
             }
 
             const isCorrect = userAnswer === question.correct;
             score += isCorrect ? 1 : 0;
-            card.remove();
-            showResultCard(isCorrect, isCorrect ? question.successMessage : question.errorMessage, () => {
-              currentIndex++;
-              startGame();
-            });
-          };
+
+            swipeCard.style.background = isCorrect ? IMAGE_SUCCESS : IMAGE_ERROR;
+            swipeCard.style.transition = 'opacity 1s ease';
+            swipeCard.style.opacity = 0;
+
+            setTimeout(() => {
+              swipeCard.remove();
+              mainCard.remove();
+              progressBar.value = currentIndex + 1;
+              showFeedbackMessage(
+                isCorrect,
+                isCorrect ? question.successMessage : question.errorMessage,
+                () => {
+                  currentIndex++;
+                  startGame();
+                }
+              );
+            }, 1000);
+          }
 
           window.addEventListener("mousemove", onMouseMove);
           window.addEventListener("mouseup", onMouseUp);
         });
       }
 
-      startGame();
+      function resetGame() {
+        currentIndex = 0;
+        score = 0;
+        wrapper.innerHTML = "";
+        wrapper.appendChild(progressBar);
+        progressBar.value = 0;
+        selectedQuestions = getRandomQuestions();
+        startGame();
+      }
+
+      resetGame();
     })();
   </script>
 </body>

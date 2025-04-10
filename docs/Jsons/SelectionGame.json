@@ -1,0 +1,122 @@
+[
+  {
+    "text": "¿El gobierno de ciberseguridad sirve para proteger la información de la empresa?",
+    "correct": true,
+    "rightText": "Sí, protege nuestra información.",
+    "leftText": "No tiene mucha importancia.",
+    "successMessage": "✅ ¡Correcto! La seguridad es prioridad.",
+    "errorMessage": "❌ No, sí es fundamental para proteger la organización."
+  },
+  {
+    "text": "¿La gestión de riesgos identifica y mitiga amenazas?",
+    "correct": true,
+    "rightText": "Así es, esa es su función.",
+    "leftText": "No, eso no tiene que ver.",
+    "successMessage": "✅ Muy bien, ¡sabes de ciberseguridad!",
+    "errorMessage": "❌ Error, la gestión de riesgos es clave."
+  },
+  {
+    "text": "¿Podemos ignorar el cumplimiento normativo si no hay inspección?",
+    "correct": false,
+    "rightText": "Sí, mientras nadie revise.",
+    "leftText": "No, siempre hay que cumplir.",
+    "successMessage": "✅ Correcto, hay que cumplir siempre.",
+    "errorMessage": "❌ ¡Cuidado! Eso puede traer sanciones."
+  },
+  {
+    "text": "¿El CISO lidera la seguridad de la información?",
+    "correct": true,
+    "rightText": "Sí, es su responsabilidad.",
+    "leftText": "No, él no tiene ese rol.",
+    "successMessage": "✅ ¡Bien! El CISO es clave en seguridad.",
+    "errorMessage": "❌ No, el CISO sí lidera esta área."
+  },
+  {
+    "text": "¿Deberías compartir tu contraseña con un compañero de trabajo?",
+    "correct": false,
+    "rightText": "Sí, no hay problema.",
+    "leftText": "No, eso no se debe hacer.",
+    "successMessage": "✅ Muy bien, nunca compartas contraseñas.",
+    "errorMessage": "❌ ¡No! Las contraseñas son personales."
+  },
+  {
+    "text": "¿Las auditorías ayudan a mejorar la ciberseguridad?",
+    "correct": true,
+    "rightText": "Claro, ayudan a detectar fallos.",
+    "leftText": "No, solo complican las cosas.",
+    "successMessage": "✅ ¡Correcto! Son esenciales para mejorar.",
+    "errorMessage": "❌ No, sí son útiles y necesarias."
+  },
+  {
+    "text": "¿Cualquiera puede tener acceso a toda la información de Profuturo?",
+    "correct": false,
+    "rightText": "Sí, no pasa nada.",
+    "leftText": "No, hay controles de acceso.",
+    "successMessage": "✅ Exacto, los accesos deben controlarse.",
+    "errorMessage": "❌ ¡Error! El acceso debe estar restringido."
+  },
+  {
+    "text": "¿La capacitación en ciberseguridad es solo para técnicos?",
+    "correct": false,
+    "rightText": "Sí, solo para expertos.",
+    "leftText": "No, todos deben aprender.",
+    "successMessage": "✅ Bien, todos debemos estar informados.",
+    "errorMessage": "❌ No, la ciberseguridad nos compete a todos."
+  },
+  {
+    "text": "¿Monitorear los sistemas ayuda a prevenir incidentes?",
+    "correct": true,
+    "rightText": "Sí, detectamos amenazas a tiempo.",
+    "leftText": "No sirve de nada.",
+    "successMessage": "✅ Correcto, el monitoreo es vital.",
+    "errorMessage": "❌ No, es parte de una buena defensa."
+  },
+  {
+    "text": "¿Está bien usar una USB desconocida en tu equipo?",
+    "correct": false,
+    "rightText": "Sí, seguro no pasa nada.",
+    "leftText": "No, puede ser peligrosa.",
+    "successMessage": "✅ Muy bien, evita riesgos innecesarios.",
+    "errorMessage": "❌ ¡No! Puede contener virus o malware."
+  },
+  {
+    "text": "¿Las contraseñas deben ser fáciles de recordar y cortas?",
+    "correct": false,
+    "rightText": "Sí, es más cómodo.",
+    "leftText": "No, deben ser robustas.",
+    "successMessage": "✅ Correcto, deben ser seguras.",
+    "errorMessage": "❌ No, es importante usar contraseñas fuertes."
+  },
+  {
+    "text": "¿El uso de VPN ayuda a proteger la conexión?",
+    "correct": true,
+    "rightText": "Sí, encripta el tráfico.",
+    "leftText": "No, no sirve de mucho.",
+    "successMessage": "✅ Muy bien, la VPN es una buena medida.",
+    "errorMessage": "❌ No, es una herramienta fundamental."
+  },
+  {
+    "text": "¿Debes seguir usando una cuenta sensible aunque no la necesites?",
+    "correct": false,
+    "rightText": "Sí, no pasa nada.",
+    "leftText": "No, hay que desactivarla.",
+    "successMessage": "✅ Correcto, deben mantenerse solo las necesarias.",
+    "errorMessage": "❌ ¡Error! Es un riesgo innecesario."
+  },
+  {
+    "text": "¿Es recomendable clasificar la información según su sensibilidad?",
+    "correct": true,
+    "rightText": "Sí, ayuda a protegerla mejor.",
+    "leftText": "No hace falta.",
+    "successMessage": "✅ Muy bien, eso mejora la seguridad.",
+    "errorMessage": "❌ No, la clasificación es esencial."
+  },
+  {
+    "text": "¿Debes tomar los cursos de ciberseguridad que se te asignan?",
+    "correct": true,
+    "rightText": "Sí, es parte de mi responsabilidad.",
+    "leftText": "No, no me interesan.",
+    "successMessage": "✅ Excelente, estás ayudando a Profuturo.",
+    "errorMessage": "❌ No, son importantes para protegernos todos."
+  }
+]
