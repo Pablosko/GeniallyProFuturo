@@ -46,6 +46,12 @@
     }
     actualizarIframe();
   }
+  function nextPage()
+  {
+    console.log("se hace")
+      const next = document.querySelector('svg .pulse-right')?.closest('div');
+      if (next) next.click();    
+  }
 
   // 🔁 Exponer globalmente
   window.cambiarAvatar = cambiarAvatar;
@@ -53,6 +59,7 @@
   window.añadirInsigniaAleatoria = añadirInsigniaAleatoria;
   window.resetearInsignias = resetearInsignias;
   window.actualizarIframe = actualizarIframe;
+  window.nextPage = nextPage;
 
   // Crear iframe
   const avatar = localStorage.getItem("user_avatar_index") || "0";

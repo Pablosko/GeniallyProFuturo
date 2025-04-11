@@ -1,0 +1,10 @@
+<script>
+    window.addEventListener("message", function(event) {
+      console.log("[Genially] Mensaje recibido:", event.data); // Debug
+  
+      if (event.data === "juego_completado") {
+        console.log("[Genially] ¡Vamos a pasar de diapositiva!");
+        window.nextPage(); 
+      }
+    });
+  </script>
