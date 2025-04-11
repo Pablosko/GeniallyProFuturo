@@ -8,3 +8,19 @@
       }
     });
   </script>
+  <script>
+    if (!window.unityGameLoaded) {
+      const iframe = document.createElement("iframe");
+      iframe.src = "https://pablosko.github.io/GeniallyProFuturo/Builds/Build/index.html";
+      iframe.width = "800";
+      iframe.height = "600";
+      iframe.frameBorder = "0";
+      iframe.allowFullscreen = true;
+  
+      document.body.appendChild(iframe);
+      window.unityGameLoaded = true;
+      console.log("🎮 Unity cargado una sola vez");
+    } else {
+      console.log("⚠️ Unity ya estaba cargado, no se duplica");
+    }
+  </script>
